@@ -32,8 +32,8 @@ void setup() {
   //while (!Serial) delay(10); 
   Serial.begin(115200);
   Serial.println(F("App start!"));
-  FS_init();    Serial.println(F("FS init done!"));
   OLED_init();  Serial.println(F("OLED init done!"));
+  FS_init();    Serial.println(F("FS init done!"));
   GNSS_init();  Serial.println(F("GNSS init done!"));
   LORA_init();  Serial.println(F("LORA init done!"));
   //Sensors_init();  Serial.println(F("Sensors init done!"));
@@ -83,6 +83,19 @@ void setup() {
     }
   });
 
+<<<<<<< Updated upstream
+=======
+  server.on("/setID", HTTP_POST, [](AsyncWebServerRequest *request){
+    String temp;
+    int id;
+    temp = request->getParam("code", true)->value();
+    id = temp.toInt();
+    Serial.printf("Received method: %s \n", temp);
+    TM_changeID(id);
+    request->send(200, "text/plain", "Succesfully changed ID to " + (String)(id) );
+  });
+
+>>>>>>> Stashed changes
   
   server.begin();
   

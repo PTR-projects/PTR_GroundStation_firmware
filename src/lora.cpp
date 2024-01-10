@@ -33,6 +33,11 @@ static uint16_t packetCounter[5] = {0,0,0,0,0};
 static float packet_rate = 0;
 static uint8_t LORA_newPacketReceivedOLED = 0;
 
+float LORA_currentFrequencyMHz = 434.25;
+
+
+
+
 
 void LORA_init(){
     Serial.print(F("[SX1278] Initializing ... "));
@@ -45,7 +50,11 @@ void LORA_init(){
         while (true);
     }
 
+<<<<<<< Updated upstream
     radio.setFrequency(433.55);
+=======
+    radio.setFrequency(434.25);
+>>>>>>> Stashed changes
     radio.setBandwidth(125);        // 7.8, 10.4, 15.6, 20.8, 31.25, 41.7, 62.5, 125, 250, 500
     radio.setSpreadingFactor(8);   // 6 - 12
     radio.setCodingRate(5);
@@ -159,6 +168,18 @@ bool LORA_changeFrequency(int freq){
     if(radio.setFrequency((float)temp) != 0){
         return false;
     }
+<<<<<<< Updated upstream
     LORA_startRX();
     return true;
 }
+=======
+    LORA_currentFrequencyMHz = ((float)freq / 1000);
+    LORA_startRX();
+    return true;
+}
+
+float LORA_getCurrentFrequency() {
+    return LORA_currentFrequencyMHz;
+}
+
+>>>>>>> Stashed changes

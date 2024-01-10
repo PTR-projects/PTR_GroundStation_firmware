@@ -2,9 +2,11 @@
 #include "TeleMetry.h"
 #include "GNSS.h"
 #include "sensors.h"
+#include "Accessories.h"
 #include "lora.h"
 #include <Wire.h>
 #include "SH1106Wire.h"
+#include "SSD1306Wire.h"
 #include "OLED.h"
 
 //---------------- OLED declarations -------------------------
@@ -27,6 +29,8 @@ void OLED_init(){
     display.setTextAlignment(TEXT_ALIGN_LEFT);
     display.setFont(ArialMT_Plain_10);
     display.clear();
+    display.drawXbm(0, 0, 128, 64, splash);
+    display.display();
     Serial.println(F("SSD1306 ready!"));
 }
 
@@ -72,8 +76,23 @@ void OLED_drawRocketLaunch(){
   OLED_drawProgressBar(0,5, 72, 9, LORA_checkTimeout()?TM_getRSSIPercentage():0);
   display.setTextAlignment(TEXT_ALIGN_RIGHT);
   display.setFont(ArialMT_Plain_10); 
+<<<<<<< Updated upstream
   display.drawStringf(127, 5, buffer, "%3.0f Ppm", LORA_getPacketRate());
+=======
+>>>>>>> Stashed changes
 
+
+  unsigned long currentMillis = millis();
+  unsigned long dT = (currentMillis - LORA_getPacketHealth()) / 1000;
+
+  //Serial.printf("Last packet: %d s ago \n", dT);
+  if(dT > 5){
+    display.drawStringf(127, 5, buffer, "%ds ", dT);
+  }
+  else{
+    display.drawStringf(127, 5, buffer, "%3.0f Ppm", LORA_getPacketRate());
+  }
+ 
 
   // // Altitude & Velocity
   // display.setTextAlignment(TEXT_ALIGN_LEFT);
@@ -94,6 +113,9 @@ void OLED_drawRocketLaunch(){
   display.drawStringf(0, 23, buffer, "%c%.7f", TM_getGeoLatitude().sign,  fabs(TM_getGeoLatitude().cord));
   display.drawStringf(0, 33, buffer, "%c%.7f", TM_getGeoLongitude().sign, fabs(TM_getGeoLongitude().cord));
 
+  //RF freq and ID
+  display.drawStringf(0, 53, buffer, "%.3fMHz", LORA_getCurrentFrequency());
+  
   // GEO own
   /*
   display.setTextAlignment(TEXT_ALIGN_RIGHT);
@@ -103,76 +125,49 @@ void OLED_drawRocketLaunch(){
   */
   display.setTextAlignment(TEXT_ALIGN_RIGHT);
   display.setFont(ArialMT_Plain_10); 
+
+  //voltages
+  display.drawStringf(127, 23, buffer, "vAvi: %.2f V", TM_getVbat());
+  display.drawStringf(127, 33, buffer, "ID: %d", TM_getID());
+
+  if( isnan(TM_getVertVel())){
+    display.drawStringf(0, 43, buffer, "Vel: --- m/s", TM_getVertVel());
+  }
+  else{
+    display.drawStringf(0, 43, buffer, "Vel: %.2f m/s", TM_getVertVel());
+  }
+  
   
   float distance = TM_getDistance2target();
   if(distance < 0.0f){
     display.drawString(127, 43, "---- km");
     display.drawString(127, 52, "---- deg");
   } else if(distance < 1000.0f){
+<<<<<<< Updated upstream
     display.drawStringf(127, 43, buffer, "Distance: %.0f m", distance * 1000.0f);
     display.drawStringf(127, 52, buffer, "Bearing: %.0f deg", TM_getDir2target());
   } else {
     display.drawStringf(127, 43, buffer, "Distance: %.1f km", distance);
     display.drawStringf(127, 52, buffer, "Bearing: %.0f deg", TM_getDir2target());
+=======
+    display.drawStringf(127, 43, buffer, "RNG: %.0f m", distance * 1000.0f);
+    display.drawStringf(127, 52, buffer, "BRG: %.0f deg", TM_getDir2target());
+  } else {
+    display.drawStringf(127, 43, buffer, "RNG: %.1f km", distance);
+    display.drawStringf(127, 52, buffer, "BRG: %.0f deg", TM_getDir2target());
+>>>>>>> Stashed changes
   }
   
-
-  // // State
-  // display.setTextAlignment(TEXT_ALIGN_LEFT);
-  // display.setFont(ArialMT_Plain_16); 
-  // switch(TM_getFlightState()){
-  //   case 0:
-  //     display.drawString(0, 27, "State 0");
-  //     break;
-  //   case 1:
-  //     display.drawString(0, 27, "State 1");
-  //     break;
-  //   case 2:
-  //     display.drawString(0, 27, "State 2");
-  //     break;
-  //   case 3:
-  //     display.drawString(0, 27, "State 3");
-  //     break;
-  //   case 4:
-  //     display.drawString(0, 27, "State 4");
-  //     break;
-  //   case 5:
-  //     display.drawString(0, 27, "State 5");
-  //     break;
-  //   case 6:
-  //     display.drawString(0, 27, "State 6");
-  //     break;
-  //   case 7:
-  //     display.drawString(0, 27, "State 7");
-  //     break;
-  //   case 8:
-  //     display.drawString(0, 27, "State 8");
-  //     break;
-  //   case 9:
-  //     display.drawString(0, 27, "State 9");
-  //     break;
-  //   case 10:
-  //     display.drawString(0, 27, "State 10");
-  //     break;
-  //   case 11:
-  //     display.drawString(0, 27, "State 11");
-  //     break;
-  //   case 12:
-  //     display.drawString(0, 27, "State 12");
-  //     break;
-  //   case 13:
-  //     display.drawString(0, 27, "State 13");
-  //     break;
-  //   default:
-  //     display.drawString(0, 27, "State Error");
-  // }
-
   if(LORA_newPacketReceiver()){
     OLED_newPacketCounter = 2;
   }
   //draw blinking dot
   if(OLED_newPacketCounter > 0){
+<<<<<<< Updated upstream
     display.fillCircle(100,30, 5);
+=======
+    display.fillCircle(80, 9, 3);
+>>>>>>> Stashed changes
     OLED_newPacketCounter--;
   }
   
