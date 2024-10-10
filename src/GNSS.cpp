@@ -1,12 +1,16 @@
 #include "Arduino.h"
 #include <math.h>
 #include <SparkFun_u-blox_GNSS_Arduino_Library.h> 
+#include <MicroNMEA.h>
 #include "BOARD.h"
 #include "GNSS.h"
 
 
 //------ GNSS -------------
 SFE_UBLOX_GNSS myGNSS;
+char nmeaBuffer[100];
+MicroNMEA nmea(nmeaBuffer, sizeof(nmeaBuffer));
+
 
 //----- Global vars --------
 float myLat    = 0.0f;
@@ -102,4 +106,9 @@ uint8_t GNSS_getOwnFix(){
 
 uint8_t GNSS_getOwnSat(){
     return mySats;
+}
+
+void SFE_UBLOX_GNSS::processNMEA(char incoming)
+{
+    nmea.process(incoming);
 }
