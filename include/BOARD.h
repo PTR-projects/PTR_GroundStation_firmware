@@ -653,6 +653,11 @@
 
 #define GPS_BAUD_RATE               115200
 
+#define BOARD_LED                   18
+#define LED_ON                      HIGH
+#define LED_OFF                     LOW
+
+
 #else
 #error "When using it for the first time, please define the board model in <utilities.h>"
 #endif
