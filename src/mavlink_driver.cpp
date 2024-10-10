@@ -1,3 +1,5 @@
+
+#if defined(TARGET_ESP32)
 //#include "TeleMetry.h"
 #include "BluetoothSerial.h"
 #include "standard/mavlink.h"
@@ -139,3 +141,4 @@ void BT_callback(esp_spp_cb_event_t event, esp_spp_cb_param_t *param){
     BTconnected = false;
   }
 }
+#endif
