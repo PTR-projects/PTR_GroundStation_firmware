@@ -23,13 +23,14 @@ static long OLED_interval = 100;
 static long OLED_newPacketCounter = 0;
 
 bool OLED_init(String driver){
-#if OLED_RST
+#if defined(OLED_RST)
     pinMode(OLED_RST, OUTPUT);
     digitalWrite(OLED_RST, HIGH); delay(20);
     digitalWrite(OLED_RST, LOW);  delay(20);
     digitalWrite(OLED_RST, HIGH); delay(20);
 #endif
 
+#if defined(HAS_DISPLAY)
   Wire.beginTransmission(DISPLAY_ADDR);
 
   if (Wire.endTransmission() == 0) {
@@ -58,9 +59,14 @@ bool OLED_init(String driver){
 
   Serial.printf("Warning: Failed to find Display at 0x%0X address\n", DISPLAY_ADDR);
   return false;
+
+#else
+  return true;
+#endif
 }
 
 void OLED_changeDriver(String driver){
+#if defined(HAS_DISPLAY)
   if((driver != "SSD1306") && (driver != "SH1106")){
     return;
   }
@@ -68,9 +74,11 @@ void OLED_changeDriver(String driver){
   Serial.printf("Changing OLED driver to %s \n", driver);
   preferences_update_OLEDdriver(driver);
   OLED_init(driver);
+#endif
 }
 
 void OLED_refresh(){
+#if defined(HAS_DISPLAY)
     unsigned long OLED_currentMillis = millis();
     if((OLED_currentMillis - OLED_previousMillis) > OLED_interval) {
         OLED_previousMillis = OLED_currentMillis;
@@ -79,6 +87,7 @@ void OLED_refresh(){
         OLED_drawRocketLaunch();
         display->display();
     }
+#endif
 }
 
 void OLED_drawProgressBar(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t progress){

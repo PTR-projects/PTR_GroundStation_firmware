@@ -1,6 +1,7 @@
 #include "Arduino.h"
 #include <math.h>
 #include <SparkFun_u-blox_GNSS_Arduino_Library.h> 
+#include "BOARD.h"
 #include "GNSS.h"
 
 
@@ -14,13 +15,25 @@ uint8_t myFix  = 0;
 uint8_t mySats = 0;
 
 bool GNSS_init(){
-    #if defined(HAS_GPS)
+#if defined (GPS_RST_PIN)
+    pinMode(GPS_RST_PIN, OUTPUT);
+    digitalWrite(GPS_RST_PIN, LOW);
+    delay(20);
+    pinMode(GPS_RST_PIN, INPUT);
+    delay(100);
+#endif
+
+#if defined (GPS_PPS_PIN)
+    pinMode(GPS_PPS_PIN, INPUT);
+#endif
+
+#if defined(HAS_GPS)
     if (myGNSS.begin(Serial1) == false) {
         Serial.println(F("Ublox init Failed."));
         //while (1);
         return false;
     }
-    #endif
+#endif
     return true;
 }
 

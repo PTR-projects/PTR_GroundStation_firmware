@@ -11,6 +11,7 @@
 
 // Support board list , Macro definition below, select the board definition to be used
 #if !defined(CI_BUILD)
+//#define HELTEC_TRACKER_V1_1
 //#define LORA32_SX1278
 
 // #define T_BEAM_SX1262
@@ -618,6 +619,39 @@
 #define HAS_DISPLAY                 
 
 #define BOARD_VARIANT_NAME          "Lora32"
+
+#elif defined(HELTEC_TRACKER_V1_1)
+#define USING_SX1262
+#define HAS_GPS
+#define GPS_RX_PIN                  33
+#define GPS_TX_PIN                  34
+#define GPS_PPS_PIN                 36
+#define GPS_RST_PIN                 35
+#define BUTTON_PIN                  0
+#define BUTTON_PIN_MASK             GPIO_SEL_0
+
+#define HAS_LCD_DISPLAY
+#define LCD_SDA                     42
+#define LCD_SCL                     41
+#define LCD_RS                      40
+#define LCS_RES                     39
+#define LCD_CS                      38
+#define LCD_LED                     21
+
+#define RADIO_SCLK_PIN               9
+#define RADIO_MISO_PIN              11
+#define RADIO_MOSI_PIN              10
+#define RADIO_CS_PIN                 8
+#define RADIO_RST_PIN               12
+#define RADIO_DIO0_PIN             (-1)
+#define RADIO_DIO1_PIN              14
+#define RADIO_BUSY_PIN              13
+
+#define BAT_ADC_PIN                  1
+#define BAT_ADC_EN_PIN               2
+#define VEXT_EN_PIN                  3
+
+#define GPS_BAUD_RATE               115200
 
 #else
 #error "When using it for the first time, please define the board model in <utilities.h>"
