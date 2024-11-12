@@ -124,10 +124,12 @@ void setup() {
   #endif
   
 
-  server.serveStatic("/tracker_list.html", SPIFFS, "/tracker_list.html");
+  server.serveStatic("/list_trackers.html", SPIFFS, "/list_trackers.html");
   server.serveStatic("/styles.css", SPIFFS, "/styles.css");
-  server.serveStatic("/tracker_list_script.js", SPIFFS, "/tracker_list_script.js");
+  server.serveStatic("/list_trackers.js", SPIFFS, "/list_trackers.js");
   server.serveStatic("/download", SPIFFS, "/log.csv");
+  server.serveStatic("/map_trackers.html", SPIFFS, "/map_trackers.html");
+  server.serveStatic("/map_trackers.js", SPIFFS, "/map_trackers.js");
 
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
