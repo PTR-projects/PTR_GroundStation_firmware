@@ -123,7 +123,7 @@ void setup() {
     OLED_drawString(0, 29, "WiFi AP created!");
   #endif
   
-
+  server.serveStatic("/index.html", SPIFFS, "/index.html");
   server.serveStatic("/tracker_list.html", SPIFFS, "/tracker_list.html");
   server.serveStatic("/styles.css", SPIFFS, "/styles.css");
   server.serveStatic("/tracker_list_script.js", SPIFFS, "/tracker_list_script.js");
@@ -131,7 +131,7 @@ void setup() {
 
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(SPIFFS, "/index.html", "text/html", false);
+    request->redirect("/index.html");
   });
 
   server.on("/tracker_list_api", HTTP_GET, [](AsyncWebServerRequest *request){
