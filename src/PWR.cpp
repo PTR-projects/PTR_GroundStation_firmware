@@ -318,7 +318,7 @@ void PWR_loop(){
     pmuInterrupt = false;
     // Get PMU Interrupt Status Register
     uint32_t status = PMU->getIrqStatus();
-    Serial.print("STATUS => HEX:");
+    Serial.print("[PWR] STATUS => HEX:");
     Serial.print(status, HEX);
     Serial.print(" BIN:");
     Serial.println(status, BIN);

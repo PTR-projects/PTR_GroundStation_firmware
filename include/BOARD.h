@@ -70,6 +70,7 @@
 #define BUTTON_PIN_MASK             GPIO_SEL_38
 #define I2C_SDA                     21
 #define I2C_SCL                     22
+#define OLED_RST                    -1
 #define PMU_IRQ                     35
 
 #define RADIO_SCLK_PIN               5
@@ -394,6 +395,7 @@
 
 #define I2C_SDA                     17
 #define I2C_SCL                     18
+#define OLED_RST                    -1
 
 #define I2C1_SDA                    42
 #define I2C1_SCL                    41
@@ -532,6 +534,7 @@
 
 #define I2C_SDA                     8
 #define I2C_SCL                     9
+#define OLED_RST                    -1
 
 #define PMU_IRQ                     4
 
@@ -597,6 +600,7 @@
 #define BUTTON_PIN_MASK             GPIO_SEL_38
 #define I2C_SDA                     21
 #define I2C_SCL                     22
+#define OLED_RST                    -1
 
 #define RADIO_SCLK_PIN               5
 #define RADIO_MISO_PIN              19
@@ -631,8 +635,8 @@
 #define BUTTON_PIN_MASK             GPIO_SEL_0
 
 #define HAS_LCD_DISPLAY
-#define LCD_SDA                     42
-#define LCD_SCL                     41
+#define LCD_MOSI                    42
+#define LCD_SCLK                    41
 #define LCD_RS                      40
 #define LCS_RES                     39
 #define LCD_CS                      38

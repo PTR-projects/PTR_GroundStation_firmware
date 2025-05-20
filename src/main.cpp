@@ -18,6 +18,7 @@
 #include "PWR.h"
 #include <SPI.h>
 #include <Wire.h>
+#include "display.h"
 
 static void getChipInfo();
 static void printWakeupReason();
@@ -50,11 +51,11 @@ void setup() {
 
   preferences_init();
 
-  if(OLED_init(preferences_get_OLEDdriver())){
-    Serial.println(F("OLED init done!"));
-    OLED_clear();
-    OLED_drawString(0, 5, "OLED OK");
-  }
+  // if(OLED_init(preferences_get_OLEDdriver())){
+  //   Serial.println(F("OLED init done!"));
+  //   // OLED_clear();
+  //   // OLED_drawString(0, 5, "OLED OK");
+  // }
 
   if(GNSS_init()){
     Serial.println(F("GNSS init done!"));
@@ -64,9 +65,9 @@ void setup() {
     TM_changeID(preferences_get_id());
     LORA_changeFrequency(preferences_get_frequency()); 
     Serial.println(F("LORA init done!"));
-    OLED_drawString(0, 21, "LORA OK");
+    // OLED_drawString(0, 21, "LORA OK");
   } else {
-    OLED_drawString(0, 21, "LORA FAIL");
+    // OLED_drawString(0, 21, "LORA FAIL");
     while(1){ delay(100); }
   }
 
@@ -85,12 +86,12 @@ void setup() {
 
     Serial.println("\n[*] Creating ESP32 AP");
     WiFi.softAP(ssid);
-    OLED_drawString(0, 29, "WiFi AP created!");
+    // OLED_drawString(0, 29, "WiFi AP created!");
 
     Serial.print("Connecting to Hotspot");
     WiFi.begin(sql_lte_ssid, sql_lte_pass);             // Connect to the network
 
-    OLED_drawString(0, 37, "WiFi connecting...");
+    // OLED_drawString(0, 37, "WiFi connecting...");
     Serial.println(" ...");
 
     uint8_t timeout = 255;
@@ -102,7 +103,7 @@ void setup() {
     }
 
     if(timeout){
-      OLED_drawString(0, 45, "WiFi connected!");
+      // OLED_drawString(0, 45, "WiFi connected!");
       Serial.println();
       Serial.println("Connected!");
       Serial.print("IP address for WiFi: ");
@@ -111,7 +112,7 @@ void setup() {
       Serial.println(WiFi.softAPIP());
     }
     else {
-      OLED_drawString(0, 45, "WiFi con. failed!");
+      // OLED_drawString(0, 45, "WiFi con. failed!");
       Serial.println();
       Serial.println("WiFi connection failed!");
     }
@@ -120,7 +121,7 @@ void setup() {
     Serial.println("Connection established!");  
   #else 
     WiFi.softAP(ssid);
-    OLED_drawString(0, 29, "WiFi AP created!");
+    // OLED_drawString(0, 29, "WiFi AP created!");
   #endif
   
 
@@ -193,32 +194,39 @@ void setup() {
 
       String driver = temp;
       Serial.printf("Received method: %s \n", driver);
-      OLED_changeDriver(driver);
+      // OLED_changeDriver(driver);
       request->send(200, "text/plain", "Succesfully changed OLED driver to " + driver);
     }
   });
 
   server.begin();
-  OLED_drawString(0, 53,"FW: " + (String)version);
+  // OLED_drawString(0, 53,"FW: " + (String)version);
   delay(2000);
 
-  OLED_clear();
-  OLED_drawSplash();
+  // OLED_clear();
+  // OLED_drawSplash();
   delay(2000);  
 
-  OLED_clear();
-  OLED_drawLargeString(0, 15, "WiFi AP:");
-  OLED_drawLargeString(0, 34, ssid);
+  // OLED_clear();
+  // OLED_drawLargeString(0, 15, "WiFi AP:");
+  // OLED_drawLargeString(0, 34, ssid);
   delay(5000);
 
   LORA_startRX();
+
+  Display_init("SSD1306");
+  Display_drawString(0,  0, "Test TFT 1234!?");
+  Display_drawString(0, 20, "PTR GS test");
+  Display_drawString(0, 40, "Adafruit GFX");
+  Display_drawString(0, 60, "tralalalala");
 }
 
 void loop() {
   LORA_RXhandler();
   LORA_PacketCounter();
   GNSS_srv();
-  OLED_refresh();
+  //OLED_refresh();
+  Display_refresh();
   PWR_loop();
 }
 
