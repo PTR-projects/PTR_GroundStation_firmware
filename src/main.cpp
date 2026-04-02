@@ -214,7 +214,7 @@ void setup() {
 
   LORA_startRX();
 
-  Display_init("SSD1306");
+  Display_init("ST7735");
   Display_drawString(0,  0, "Test TFT 1234!?");
   Display_drawString(0, 20, "PTR GS test");
   Display_drawString(0, 40, "Adafruit GFX");
