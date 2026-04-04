@@ -345,10 +345,6 @@ static void BOARD_init(){
     Wire.begin(I2C_SDA, I2C_SCL);
 #endif
 
-#ifdef HAS_GPS
-    Serial1.begin(GPS_BAUD_RATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
-#endif // HAS_GPS
-
 
 #ifdef BOARD_LED
     /*

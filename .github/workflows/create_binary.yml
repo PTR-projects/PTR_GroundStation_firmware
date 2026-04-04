@@ -46,7 +46,7 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                targets: [ttgo-t-beam-sx1278, ttgo-t-beam-sx1276, ttgo-t-beam-sx1262, ttgo-t3-v1_3-sx1278, ttgo-t3-v1_3-sx1276, ttgo-t3-v1_6-sx1278, ttgo-t3-v1_6-sx1276]
+                targets: [ttgo-t-beam-sx1278, ttgo-t-beam-sx1276, ttgo-t-beam-sx1262, ttgo-t3-v1_3-sx1278, ttgo-t3-v1_3-sx1276, ttgo-t3-v1_6-sx1278, ttgo-t3-v1_6-sx1276, heltec-tracker-v1_1, heltec-lora32-v3_2]
         steps:
           # Checkout repository
           - name: Checkout code

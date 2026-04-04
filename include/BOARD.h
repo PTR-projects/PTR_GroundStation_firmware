@@ -628,7 +628,7 @@
 #define BAT_ADC_EN_LEVEL            LOW
 #define VEXT_EN_PIN                 36
 #define VEXT_EN_LEVEL               LOW
-#define GPS_BAUD_RATE               115200
+#define GPS_BAUDRATE               115200
 #define BOARD_LED                   35
 #define LED_ON                      HIGH
 #define LED_OFF                     LOW

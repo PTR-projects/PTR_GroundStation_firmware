@@ -25,7 +25,7 @@ bool GNSS_init(){
     pinMode(GPS_PPS_PIN, INPUT);
 #endif
 
-    Serial1.begin(115200, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
+    Serial1.begin(GPS_BAUDRATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
 #endif
     return true;
 }
