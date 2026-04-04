@@ -406,7 +406,7 @@
 #define PIN_NONE                    (-1)
 #define RTC_INT                     (14)
 
-#define GPS_BAUD_RATE               9600
+#define GPS_BAUDRATE               9600
 
 #define HAS_SDCARD
 #define HAS_GPS
@@ -518,7 +518,7 @@
 #define SDCARD_SCLK                 SPI_SCK
 #define SDCARD_CS                   SPI_CS
 #define PIN_NONE                    (-1)
-#define GPS_BAUD_RATE               9600
+#define GPS_BAUDRATE               9600
 #define HAS_SDCARD
 #define HAS_GPS
 #define HAS_PMU
@@ -564,7 +564,7 @@
 #define BOARD_LED                   4
 #define LED_ON                      LOW
 #define LED_OFF                     HIGH
-#define GPS_BAUD_RATE               9600
+#define GPS_BAUDRATE               9600
 #define HAS_DISPLAY
 #define DISP_ST7735_160_80     0    // Enable TFT
 #define DISP_SSD1306_128_64    1    // Enable SSD1306 OLED  
@@ -599,8 +599,8 @@
 #define BAT_ADC_EN_PIN               2
 #define BAT_ADC_EN_LEVEL             HIGH
 #define VEXT_EN_PIN                  3
-#define VEXT_EN_LEVE                 HIGH
-#define GPS_BAUD_RATE               115200
+#define VEXT_EN_LEVEL                 HIGH
+#define GPS_BAUDRATE               115200
 #define BOARD_LED                   18
 #define LED_ON                      HIGH
 #define LED_OFF                     LOW
