@@ -577,7 +577,6 @@
 #define GPS_RST_PIN                 35
 #define BUTTON_PIN                  0
 #define BUTTON_PIN_MASK             GPIO_SEL_0
-#define HAS_LCD_DISPLAY
 #define LCD_MOSI                    42
 #define LCD_SCLK                    41
 #define LCD_RS                      40
@@ -600,9 +599,35 @@
 #define LED_ON                      HIGH
 #define LED_OFF                     LOW
 #define HAS_DISPLAY
-#define DISP_ST7735_160_80     1    // Enable TFT
-#define DISP_SSD1306_128_64    0    // Enable SSD1306 OLED  
-#define DISP_SH110X_128_64     0    // Disable SH110X OLED
+#define DISP_ST7735_160_80     1
+#define DISP_SSD1306_128_64    0
+#define DISP_SH110X_128_64     0
+
+#elif defined(HELTEC_LORA32_V3_2)
+#define USING_SX1262
+#define BUTTON_PIN                  0
+#define BUTTON_PIN_MASK             GPIO_SEL_0
+#define I2C_SDA                     17
+#define I2C_SCL                     18
+#define OLED_RST                    21
+#define RADIO_SCLK_PIN               9
+#define RADIO_MISO_PIN              11
+#define RADIO_MOSI_PIN              10
+#define RADIO_CS_PIN                 8
+#define RADIO_RST_PIN               12
+#define RADIO_DIO1_PIN              14
+#define RADIO_BUSY_PIN              13
+#define BAT_ADC_PIN                  1
+#define BAT_ADC_EN_PIN              37
+#define VEXT_EN_PIN                 36
+#define GPS_BAUD_RATE               115200
+#define BOARD_LED                   35
+#define LED_ON                      HIGH
+#define LED_OFF                     LOW
+#define HAS_DISPLAY
+#define DISP_ST7735_160_80     0
+#define DISP_SSD1306_128_64    1  
+#define DISP_SH110X_128_64     1
 
 
 #else

@@ -24,6 +24,7 @@ public:
     // Color management
     virtual void setColor(DisplayColor color) = 0;
     virtual void setTextAlignment(TextAlignment alignment) = 0;
+    virtual void setFont(const uint8_t* font) = 0;
     
     // Low-level primitives (must be implemented by each display)
     virtual void drawPixel(uint16_t x, uint16_t y) = 0;
@@ -33,7 +34,7 @@ public:
     virtual void fillRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height) = 0;
     virtual void drawCircle(uint16_t x, uint16_t y, uint16_t radius) = 0;
     virtual void fillCircle(uint16_t x, uint16_t y, uint16_t radius) = 0;
-    virtual void drawBitmap(uint16_t x, uint16_t y, const uint8_t *bitmap, uint16_t width, uint16_t height) = 0;
+    virtual void drawBitmap(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint8_t *bitmap) = 0;
     virtual uint16_t getWidth() = 0;
     virtual uint16_t getHeight() = 0;
     

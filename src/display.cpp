@@ -121,6 +121,26 @@ public:
         }
     }
     
+    // Draw XBM format bitmap
+    void drawBitmap(int16_t xMove, int16_t yMove, int16_t width, int16_t height, const uint8_t *xbm) {
+        int16_t widthInXbm = (width + 7) / 8;
+        uint8_t data = 0;
+
+        for(int16_t y = 0; y < height; y++) {
+            for(int16_t x = 0; x < width; x++) {
+                if (x & 7) {
+                    data >>= 1; // Move a bit
+                } else {  // Read new data every 8 bit
+                    data = pgm_read_byte(xbm + (x / 8) + y * widthInXbm);
+                }
+                // if there is a bit draw it
+                if (data & 0x01) {
+                    setPixel(xMove + x, yMove + y);
+                }
+            }
+        }
+    }
+    
     // Flush framebuffer to display
     void flush() {
         if (!_framebuffer || !_dirty) return;
@@ -374,17 +394,17 @@ public:
         }
     }
     
-    void drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t width, int16_t height) {
-        for (int16_t j = 0; j < height; j++) {
-            for (int16_t i = 0; i < width; i++) {
-                uint16_t byteIndex = (j * width + i) / 8;
-                uint8_t bitIndex = 7 - ((j * width + i) % 8);
-                if (bitmap[byteIndex] & (1 << bitIndex)) {
-                    setPixel(x + i, y + j);
-                }
-            }
-        }
-    }
+    // void drawBitmap(int16_t x, int16_t y, int16_t width, int16_t height, const uint8_t *bitmap) {
+    //     for (int16_t j = 0; j < height; j++) {
+    //         for (int16_t i = 0; i < width; i++) {
+    //             uint16_t byteIndex = (j * width + i) / 8;
+    //             uint8_t bitIndex = 7 - ((j * width + i) % 8);
+    //             if (bitmap[byteIndex] & (1 << bitIndex)) {
+    //                 setPixel(x + i, y + j);
+    //             }
+    //         }
+    //     }
+    // }
 };
 
 // ---- Concrete display drivers ----------------------------------------
@@ -408,10 +428,20 @@ private:
 public:
     ST7735_Display() {
         pinMode(LCD_LED, OUTPUT);
-        pinMode(VEXT_EN_PIN, OUTPUT);   // TODO: move to PWR module
+        pinMode(VEXT_EN_PIN, OUTPUT);
         digitalWrite(VEXT_EN_PIN, HIGH);
         digitalWrite(LCD_LED, HIGH);
         delay(10);
+        
+        // Initialize hardware SPI with correct pins
+        // SPIClass hspi = SPIClass(HSPI);
+        // hspi.begin(LCD_SCLK, 46, LCD_MOSI, -1);
+        // hspi.setFrequency(1000000);
+        
+        // Use hardware SPI for much better performance
+        //_drv = new Adafruit_ST7735(&hspi, LCD_CS, LCD_RS, LCS_RES);
+
+        // Use software SPI
         _drv = new Adafruit_ST7735(LCD_CS, LCD_RS, LCD_MOSI, LCD_SCLK, LCS_RES);
         _drv->initR(INITR_MINI160x80_PLUGIN);
         _drv->setRotation(1);
@@ -441,8 +471,23 @@ public:
         _renderer->setTextAlignment(alignment);
     }
     
+    void setFont(const uint8_t* font) override {
+        _renderer->setFont(font);
+    }
+    
     void drawSplash() override {
-        // TODO: add colour splash bitmap for TFT
+        // Center the 128x64 splash on 160x80 display
+        uint16_t splashX = (160 - 128) / 2;  // Center horizontally: (160-128)/2 = 16
+        uint16_t splashY = (80 - 64) / 2;   // Center vertically: (80-64)/2 = 8
+        
+        // Clear display first
+        clear();
+        
+        // Draw splash bitmap using new drawBitmap function
+        drawBitmap(splashX, splashY, 128, 64, splash_ptr);
+        
+        // Flush to display
+        flush();
     }
     
     void flush() override {
@@ -494,8 +539,8 @@ public:
         _renderer->fillCircle(x, offsetY(y), radius);
     }
     
-    void drawBitmap(uint16_t x, uint16_t y, const uint8_t *bitmap, uint16_t width, uint16_t height) override {
-        _renderer->drawBitmap(x, offsetY(y), bitmap, width, height);
+    void drawBitmap(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint8_t *bitmap) override {
+        _renderer->drawBitmap(x, offsetY(y), width, height, bitmap);
     }
     
     uint16_t getWidth() override {
@@ -510,28 +555,33 @@ public:
 
 
 #if (DISP_SSD1306_128_64 || DISP_SH110X_128_64)
-#include <Adafruit_GFX.h>
+#define SSD1306_NO_SPLASH
+#define SH110X_NO_SPLASH
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_SH110X.h>
-#include "OLED.h"   // splash bitmap
 
 #if DISP_SSD1306_128_64
 class SSD1306_Display : public IDisplay {
 private:
     Adafruit_SSD1306 *_drv;
     DisplayRenderer* _renderer;
-        
-    // Apply Y offset for lines with Y > 10
+
+    // OLED displays need Y coordinate shift for page addressing
     uint16_t offsetY(uint16_t y) {
-        return (y > 10) ? y - 4 : y;
+        return y; //(y > 10) ? y - 4 : y;
     }
         
 public:
     SSD1306_Display() {
         _drv = new Adafruit_SSD1306(128, 64, &Wire, OLED_RST);
         _drv->begin(SSD1306_SWITCHCAPVCC, DISPLAY_ADDR);
-        delay(100);
-            
+        //_drv->setRotation(1);
+        _drv->clearDisplay();
+        _drv->display();
+        
+        // Pre-allocate monochrome buffer for bulk transfer
+        uint16_t bufferSize = 128 * ((64 + 7) / 8);  // Width * Height in pages
+        
         _renderer = new DisplayRenderer(this, 128, 64);
         _renderer->setFont(ArialMT_Plain_10);
     }
@@ -556,9 +606,19 @@ public:
     void setTextAlignment(TextAlignment alignment) override {
         _renderer->setTextAlignment(alignment);
     }
+    
+    void setFont(const uint8_t* font) override {
+        _renderer->setFont(font);
+    }
         
     void drawSplash() override {
-        _drv->drawBitmap(0, 0, splash, 128, 64, SSD1306_WHITE);
+        // Clear display first
+        clear();
+        
+        // Draw splash bitmap using new drawBitmap function
+        drawBitmap(0, 0, 128, 64, splash_ptr);
+        
+        // Flush to display
         flush();
     }
         
@@ -579,44 +639,30 @@ public:
         }
     }
     
-    void drawBuffer(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint16_t* buffer) override {
-        // Convert RGB565 buffer to monochrome and send in pages
-        uint8_t pageHeight = 8;  // OLED displays are organized in 8-pixel pages
-        
-        for (uint16_t page = 0; page < (height + pageHeight - 1) / pageHeight; page++) {
-            uint16_t pageY = y + page * pageHeight;
-            
-            // Set page and column address
-            _drv->setCursor(x, pageY / 8);
-            
-            // Process one row of pixels (8 pixels high)
+    void drawBuffer(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint16_t* buffer) override {  
+        uint16_t bufferWidth = getWidth();
+
+        for (uint16_t row = 0; row < height; row++) {
             for (uint16_t col = 0; col < width; col++) {
-                uint8_t pageByte = 0;
+                // Get pixel color
+                uint16_t pixelColor = buffer[row*bufferWidth + col];
+
+                // Fast RGB565 to grayscale conversion
+                uint8_t gray = ((pixelColor >> 11) & 0x1F) +          // R5
+                                ((pixelColor >> 5) & 0x3F) +           // G6  
+                                (pixelColor & 0x1F);                   // B5
                 
-                // Process 8 pixels vertically
-                for (uint8_t bit = 0; bit < pageHeight; bit++) {
-                    uint16_t pixelY = page * pageHeight + bit;
-                    if (pixelY < height) {
-                        uint16_t pixelIndex = pixelY * width + col;
-                        uint16_t pixelColor = buffer[pixelIndex];
-                        
-                        // Convert RGB565 to grayscale (simple method)
-                        uint8_t r = (pixelColor >> 11) & 0x1F;
-                        uint8_t g = (pixelColor >> 5) & 0x3F;
-                        uint8_t b = pixelColor & 0x1F;
-                        uint8_t gray = (r * 29 + g * 150 + b * 29) >> 8;  // Weighted grayscale
-                        
-                        // Set bit if pixel is bright enough
-                        if (gray > 64) {  // Threshold for white/black
-                            pageByte |= (1 << bit);
-                        }
-                    }
+                // Set bit if pixel is bright enough
+                if (gray > 48) {  // Optimized threshold
+                    _drv->drawPixel(col, row, SSD1306_WHITE);
+                } else {
+                    _drv->drawPixel(col, row, SSD1306_BLACK);
                 }
-                
-                // Send the page byte
-                _drv->write(pageByte);
             }
         }
+        
+        // Bulk transfer entire buffer to display
+        _drv->display();
     }
         
     void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) override {
@@ -639,8 +685,8 @@ public:
         _renderer->fillCircle(x, offsetY(y), radius);
     }
         
-    void drawBitmap(uint16_t x, uint16_t y, const uint8_t *bitmap, uint16_t width, uint16_t height) override {
-        _renderer->drawBitmap(x, offsetY(y), bitmap, width, height);
+    void drawBitmap(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint8_t *bitmap) override {
+        _renderer->drawBitmap(x, offsetY(y), width, height, bitmap);
     }
         
     uint16_t getWidth() override {
@@ -662,7 +708,7 @@ private:
     
     // Uniform display - no shift required
     uint16_t offsetY(uint16_t y) {
-        return y;
+        return y;//(y > 10) ? y - 4 : y;
     }
     
 public:
@@ -670,6 +716,9 @@ public:
         _drv = new Adafruit_SH1106G(128, 64, &Wire, OLED_RST);
         _drv->begin(DISPLAY_ADDR);
         delay(100);
+        
+        // Pre-allocate monochrome buffer for bulk transfer
+        uint16_t bufferSize = 128 * ((64 + 7) / 8);  // Width * Height in pages
         
         _renderer = new DisplayRenderer(this, 128, 64);
         _renderer->setFont(ArialMT_Plain_10);
@@ -696,8 +745,18 @@ public:
         _renderer->setTextAlignment(alignment);
     }
     
+    void setFont(const uint8_t* font) override {
+        _renderer->setFont(font);
+    }
+    
     void drawSplash() override {
-        _drv->drawBitmap(0, 0, splash, 128, 64, SH110X_WHITE);
+        // Clear display first
+        clear();
+        
+        // Draw splash bitmap using new drawBitmap function
+        drawBitmap(0, 0, 128, 64, splash_ptr);
+        
+        // Flush to display
         flush();
     }
     
@@ -719,43 +778,29 @@ public:
     }
     
     void drawBuffer(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint16_t* buffer) override {
-        // Convert RGB565 buffer to monochrome and send in pages
-        uint8_t pageHeight = 8;  // OLED displays are organized in 8-pixel pages
-        
-        for (uint16_t page = 0; page < (height + pageHeight - 1) / pageHeight; page++) {
-            uint16_t pageY = y + page * pageHeight;
-            
-            // Set page and column address
-            _drv->setCursor(x, pageY / 8);
-            
-            // Process one row of pixels (8 pixels high)
+        uint16_t bufferWidth = getWidth();
+
+        for (uint16_t row = 0; row < height; row++) {
             for (uint16_t col = 0; col < width; col++) {
-                uint8_t pageByte = 0;
+                // Get pixel color
+                uint16_t pixelColor = buffer[row*bufferWidth + col];
+
+                // Fast RGB565 to grayscale conversion
+                uint8_t gray = ((pixelColor >> 11) & 0x1F) +          // R5
+                                ((pixelColor >> 5) & 0x3F) +           // G6  
+                                (pixelColor & 0x1F);                   // B5
                 
-                // Process 8 pixels vertically
-                for (uint8_t bit = 0; bit < pageHeight; bit++) {
-                    uint16_t pixelY = page * pageHeight + bit;
-                    if (pixelY < height) {
-                        uint16_t pixelIndex = pixelY * width + col;
-                        uint16_t pixelColor = buffer[pixelIndex];
-                        
-                        // Convert RGB565 to grayscale (simple method)
-                        uint8_t r = (pixelColor >> 11) & 0x1F;
-                        uint8_t g = (pixelColor >> 5) & 0x3F;
-                        uint8_t b = pixelColor & 0x1F;
-                        uint8_t gray = (r * 29 + g * 150 + b * 29) >> 8;  // Weighted grayscale
-                        
-                        // Set bit if pixel is bright enough
-                        if (gray > 64) {  // Threshold for white/black
-                            pageByte |= (1 << bit);
-                        }
-                    }
+                // Set bit if pixel is bright enough
+                if (gray > 48) {  // Optimized threshold
+                    _drv->drawPixel(col, row, SSD1306_WHITE);
+                } else {
+                    _drv->drawPixel(col, row, SSD1306_BLACK);
                 }
-                
-                // Send the page byte
-                _drv->write(pageByte);
             }
         }
+        
+        // Bulk transfer entire buffer to display
+        _drv->display();
     }
     
     void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) override {
@@ -778,8 +823,8 @@ public:
         _renderer->fillCircle(x, offsetY(y), radius);
     }
     
-    void drawBitmap(uint16_t x, uint16_t y, const uint8_t *bitmap, uint16_t width, uint16_t height) override {
-        _renderer->drawBitmap(x, offsetY(y), bitmap, width, height);
+    void drawBitmap(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint8_t *bitmap) override {
+        _renderer->drawBitmap(x, offsetY(y), width, height, bitmap);
     }
     
     uint16_t getWidth() override {
@@ -848,7 +893,17 @@ void Display_drawString(uint16_t x, uint16_t y, const String &text) {
 }
 
 void Display_drawLargeString(uint16_t x, uint16_t y, const String &text) {
-    if (g_display) g_display->drawString(x, y, text, 2);
+    if (g_display) {
+        g_display->setTextAlignment(TEXT_ALIGN_LEFT);
+        
+        // Set large font (ArialMT_Plain_16) instead of scaling
+        extern const uint8_t ArialMT_Plain_16[] PROGMEM;
+        g_display->setFont(ArialMT_Plain_16);
+        
+        g_display->drawString(x, y, text, 1);  // Use size=1 for normal rendering
+
+        g_display->setFont(ArialMT_Plain_10);
+    }
 }
 
 void Display_drawSplash() {
@@ -859,6 +914,7 @@ void Display_refresh() {
     unsigned long now = millis();
     if ((now - Display_previousMillis) > Display_interval) {
         Display_previousMillis = now;
+        Serial.println("Tick");
         if (g_display) {
             g_display->clear();
             g_display->drawRocketLaunch();
@@ -947,4 +1003,8 @@ void Display_clear(DisplayColor color) {
         // For now, fall back to regular clear
         g_display->clear();
     }
+}
+
+void Display_flush() {
+    if (g_display) g_display->flush();
 }
