@@ -50,10 +50,10 @@ jobs:
         steps:
           # Checkout repository
           - name: Checkout code
-            uses: actions/checkout@v4
+            uses: actions/checkout@v6
           
           - name: Cache
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
               path: |
                 ~/.cache/pip
@@ -61,7 +61,7 @@ jobs:
               key: ${{ runner.os }}-pio
               
           - name: Python setup
-            uses: actions/setup-python@v5
+            uses: actions/setup-python@v6
             with:
               python-version: '3.9'
               
@@ -94,7 +94,7 @@ jobs:
               zip ../artifact/ptr_gs_firmware_${{ github.event.inputs.releaseTag }}__${{ matrix.targets }}.zip ptr_gs_firmware_${{ matrix.targets }}_${{ github.event.inputs.releaseTag }}.bin
           
           - name: Upload
-            uses: actions/upload-release-asset@v1
+            uses: actions/upload-release-asset@v2
             env:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             with:
