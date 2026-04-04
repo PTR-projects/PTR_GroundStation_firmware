@@ -41,6 +41,8 @@ void setup() {
   uint8_t mac[6];
   char ssid[12];
 
+  delay(5000);
+
   BOARD_init(); Serial.println(F("BOARD init done!"));
   PWR_init(); Serial.println(F("PWR init done!"));
 
@@ -55,6 +57,7 @@ void setup() {
   // }
 
   Display_init("SSD1306");
+  //Display_init("ST7735");
 
   if(GNSS_init()){
     Serial.println(F("GNSS init done!"));
@@ -206,7 +209,7 @@ void setup() {
 
   // Display firmware version
   Display_clear();
-  Display_drawLargeString(0, 53,"FW: " + (String)version);
+  Display_drawLargeString(0, 34,"FW: " + (String)version);
   Display_flush();
   delay(2000);
 
@@ -227,8 +230,6 @@ void loop() {
   Display_refresh();
   PWR_loop();
 }
-
-
 
 static void getChipInfo(){
   struct {

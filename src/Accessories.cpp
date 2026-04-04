@@ -6,7 +6,7 @@ void Accessories_init() {
 #endif
 #if defined(BAT_ADC_EN_PIN)
     pinMode(BAT_ADC_EN_PIN, OUTPUT);
-    digitalWrite(BAT_ADC_EN_PIN, LOW);
+    digitalWrite(BAT_ADC_EN_PIN, !BAT_ADC_EN_LEVEL);
 #endif
 }
 
@@ -14,7 +14,7 @@ float Accessories_getVBat() {
     float bat_v = 0.0f;
 
 #if defined(BAT_ADC_EN_PIN)
-    digitalWrite(BAT_ADC_EN_PIN, HIGH);
+    digitalWrite(BAT_ADC_EN_PIN, BAT_ADC_EN_LEVEL);
     delay(10);
 #endif
 
@@ -30,7 +30,7 @@ float Accessories_getVBat() {
 #endif
 
 #if defined(BAT_ADC_EN_PIN)
-    digitalWrite(BAT_ADC_EN_PIN, LOW);
+    digitalWrite(BAT_ADC_EN_PIN, !BAT_ADC_EN_LEVEL);
 #endif
 
     return bat_v;

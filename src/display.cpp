@@ -428,10 +428,13 @@ private:
 public:
     ST7735_Display() {
         pinMode(LCD_LED, OUTPUT);
-        pinMode(VEXT_EN_PIN, OUTPUT);
-        digitalWrite(VEXT_EN_PIN, HIGH);
         digitalWrite(LCD_LED, HIGH);
-        delay(10);
+#ifdef VEXT_EN_PIN
+        pinMode(VEXT_EN_PIN, OUTPUT);
+        digitalWrite(VEXT_EN_PIN, VEXT_EN_LEVEL);
+        delay(100);
+#endif
+        
         
         // Initialize hardware SPI with correct pins
         // SPIClass hspi = SPIClass(HSPI);
@@ -573,6 +576,12 @@ private:
         
 public:
     SSD1306_Display() {
+#ifdef VEXT_EN_PIN
+        pinMode(VEXT_EN_PIN, OUTPUT);
+        digitalWrite(VEXT_EN_PIN, VEXT_EN_LEVEL);
+        delay(100);
+#endif
+
         _drv = new Adafruit_SSD1306(128, 64, &Wire, OLED_RST);
         _drv->begin(SSD1306_SWITCHCAPVCC, DISPLAY_ADDR);
         //_drv->setRotation(1);

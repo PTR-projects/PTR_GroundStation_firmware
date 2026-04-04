@@ -88,7 +88,7 @@
 #define LED_ON                      LOW
 #define LED_OFF                     HIGH
 
-#define GPS_BAUD_RATE               9600
+#define GPS_BAUDRATE                9600
 #define HAS_GPS
 #define HAS_PMU
 
@@ -379,7 +379,8 @@
 #define GPS_RX_PIN                  9
 #define GPS_TX_PIN                  8
 #define GPS_WAKEUP_PIN              7
-#define GPS_PPS_PIN                6
+#define GPS_PPS_PIN                 6
+#define GPS_BAUDRATE                115200  
 #define BUTTON_PIN                  0
 #define BUTTON_PIN_MASK             GPIO_SEL_0
 #define BUTTON_CONUT                (1)
@@ -449,7 +450,7 @@
 #define GPS_RX_PIN                                      PC11
 #define GPS_TX_PIN                                      PC10
 #define GPS_ENABLE_PIN                                  PC6
-#define GPS_BAUD_RATE                                   115200
+#define GPS_BAUDRATE                                    115200
 #define GPS_PPS_PIN                                     PB5
 #define UART_RX_PIN                                     PA10
 #define UART_TX_PIN                                     PA9
@@ -492,6 +493,7 @@
 #define GPS_RX_PIN                  5
 #define GPS_TX_PIN                  6
 #define GPS_PPS_PIN                 7
+#define GPS_BAUDRATE                9600  
 #define BUTTON_PIN                  0
 #define BUTTON_PIN_MASK             GPIO_SEL_0
 #define BUTTON_CONUT                (2)
@@ -541,6 +543,7 @@
 
 #define GPS_RX_PIN                  34
 #define GPS_TX_PIN                  12
+#define GPS_BAUDRATE                9600  
 #define BUTTON_PIN                  38
 #define BUTTON_PIN_MASK             GPIO_SEL_38
 #define I2C_SDA                     21
@@ -575,6 +578,7 @@
 #define GPS_TX_PIN                  34
 #define GPS_PPS_PIN                 36
 #define GPS_RST_PIN                 35
+#define GPS_BAUDRATE                115200   
 #define BUTTON_PIN                  0
 #define BUTTON_PIN_MASK             GPIO_SEL_0
 #define LCD_MOSI                    42
@@ -593,7 +597,9 @@
 #define RADIO_BUSY_PIN              13
 #define BAT_ADC_PIN                  1
 #define BAT_ADC_EN_PIN               2
+#define BAT_ADC_EN_LEVEL             HIGH
 #define VEXT_EN_PIN                  3
+#define VEXT_EN_LEVE                 HIGH
 #define GPS_BAUD_RATE               115200
 #define BOARD_LED                   18
 #define LED_ON                      HIGH
@@ -619,7 +625,9 @@
 #define RADIO_BUSY_PIN              13
 #define BAT_ADC_PIN                  1
 #define BAT_ADC_EN_PIN              37
+#define BAT_ADC_EN_LEVEL            LOW
 #define VEXT_EN_PIN                 36
+#define VEXT_EN_LEVEL               LOW
 #define GPS_BAUD_RATE               115200
 #define BOARD_LED                   35
 #define LED_ON                      HIGH
