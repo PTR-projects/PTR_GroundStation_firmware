@@ -35,6 +35,7 @@ private:
     uint16_t _framebufferHeight;
     bool _dirty;
     DisplayColor _currentColor;
+    TextAlignment _textAlignment;
     
     // Convert display color to hardware-specific color value
     uint16_t getHardwareColor(DisplayColor color) {
@@ -64,8 +65,7 @@ private:
     
 public:
     DisplayRenderer(IDisplay* display, uint16_t width, uint16_t height) 
-        : _display(display), _framebufferWidth(width), _framebufferHeight(height), _dirty(false), _currentColor(COLOR_WHITE) {
-        // Allocate framebuffer (width × height pixels × 2 bytes per pixel for RGB565)
+        : _display(display), _framebufferWidth(width), _framebufferHeight(height), _dirty(false), _currentColor(COLOR_WHITE), _textAlignment(TEXT_ALIGN_LEFT) {
         _framebuffer = (uint16_t*)malloc(width * height * sizeof(uint16_t));
         if (_framebuffer) {
             clear();
@@ -84,6 +84,10 @@ public:
     
     DisplayColor getColor() {
         return _currentColor;
+    }
+
+    void setTextAlignment(TextAlignment alignment) {
+        _textAlignment = alignment;
     }
 
     void setColor(DisplayColor color) {
@@ -215,9 +219,49 @@ public:
         return charWidth;
     }
     
+    uint16_t getTextWidth(const String &text, uint8_t size) {
+        uint16_t totalWidth = 0;
+        
+        for (uint16_t i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            uint8_t charWidth = getCharWidth(c);
+            
+            if (size > 1) {
+                totalWidth += charWidth * size;
+            } else {
+                totalWidth += charWidth;
+            }
+        }
+        
+        return totalWidth;
+    }
+    
+    uint8_t getCharWidth(char c) {
+        if (!currentFont) return 0;
+        
+        uint8_t firstChar = pgm_read_byte(currentFont + FIRST_CHAR_POS);
+        uint8_t charCount = pgm_read_byte(currentFont + CHAR_NUM_POS);
+        
+        if (c < firstChar || c >= firstChar + charCount) {
+            return 0;
+        }
+        
+        uint8_t charIndex = c - firstChar;
+        uint16_t jumpOffset = JUMPTABLE_START + charIndex * JUMPTABLE_BYTES;
+        
+        uint8_t charWidth = pgm_read_byte(currentFont + jumpOffset + JUMPTABLE_WIDTH);
+        return charWidth;
+    }
+    
     void drawString(int16_t x, int16_t y, const String &text, uint8_t size) {
         int16_t cursorX = x;
         int16_t cursorY = y;
+        
+        // Handle text alignment
+        if (_textAlignment == TEXT_ALIGN_RIGHT) {
+            uint16_t textWidth = getTextWidth(text, size);
+            cursorX = x - textWidth;
+        }
         
         for (uint16_t i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
@@ -393,6 +437,10 @@ public:
         _renderer->setColor(color);
     }
     
+    void setTextAlignment(TextAlignment alignment) override {
+        _renderer->setTextAlignment(alignment);
+    }
+    
     void drawSplash() override {
         // TODO: add colour splash bitmap for TFT
     }
@@ -503,6 +551,10 @@ public:
     
     void setColor(DisplayColor color) override {
         _renderer->setColor(color);
+    }
+    
+    void setTextAlignment(TextAlignment alignment) override {
+        _renderer->setTextAlignment(alignment);
     }
         
     void drawSplash() override {
@@ -638,6 +690,10 @@ public:
     
     void setColor(DisplayColor color) override {
         _renderer->setColor(color);
+    }
+    
+    void setTextAlignment(TextAlignment alignment) override {
+        _renderer->setTextAlignment(alignment);
     }
     
     void drawSplash() override {
@@ -840,6 +896,11 @@ DisplayColor Display_getColor() {
     // Note: This would require access to renderer state
     // For now, return default color
     return COLOR_WHITE;
+}
+
+// Text functions
+void Display_setTextAlignment(TextAlignment alignment) {
+    if (g_display) g_display->setTextAlignment(alignment);
 }
 
 void Display_setPixel(uint16_t x, uint16_t y) {

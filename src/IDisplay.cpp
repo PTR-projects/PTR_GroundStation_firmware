@@ -36,6 +36,7 @@ void IDisplay::drawRocketLaunch() {
     unsigned long dT = (currentMillis - LORA_getPacketHealth()) / 1000;
 
     // Packet rate or time since last packet
+    Display_setTextAlignment(TEXT_ALIGN_RIGHT);
     if(dT > 5){
         drawString(127, 5, String(dT) + "s ", 1);
     }
@@ -44,6 +45,7 @@ void IDisplay::drawRocketLaunch() {
     }
 
     // GEO data
+    Display_setTextAlignment(TEXT_ALIGN_LEFT);
     if(TM_getGeoAltitude() < 1000.0f){
         drawString(0, 16, String(TM_getGeoAltitude(), 2) + " m", 1);
     }
@@ -59,6 +61,7 @@ void IDisplay::drawRocketLaunch() {
     drawString(0, 46, "ID: " + String(TM_getID()), 1);
 
     // Battery and velocity
+    Display_setTextAlignment(TEXT_ALIGN_RIGHT);
     drawString(127, 16, "BAT:  " + String(PWR_getBAT(), 2) + " V", 1);
     drawString(127, 26, "vAvi: " + String(TM_getVbat(), 2) + " V", 1);
     
@@ -86,10 +89,12 @@ void IDisplay::drawRocketLaunch() {
     if(LORA_newPacketReceiver()){
         newPacketCounter = 2;
     }
+
     if(newPacketCounter > 0){
         fillCircle(80, 9, 3);
         newPacketCounter--;
     }
+    Display_setTextAlignment(TEXT_ALIGN_LEFT);
 }
 
 void IDisplay::drawFinder() {
@@ -98,10 +103,12 @@ void IDisplay::drawFinder() {
     setColor(COLOR_WHITE);
 
     // RSSI bar
+    Display_setTextAlignment(TEXT_ALIGN_RIGHT);
     drawProgressBar(0, 0, 72, 9, LORA_checkTimeout() ? TM_getRSSIPercentage() : 0);
     drawString(127, 0, String(LORA_getPacketRate(), 0) + " Ppm", 1);
 
     // GEO coordinates
+    Display_setTextAlignment(TEXT_ALIGN_LEFT);
     drawString(0, 43, String(TM_getGeoLatitude().sign) + String(fabs(TM_getGeoLatitude().cord), 7), 1);
     drawString(0, 52, String(TM_getGeoLongitude().sign) + String(fabs(TM_getGeoLongitude().cord), 7), 1);
 

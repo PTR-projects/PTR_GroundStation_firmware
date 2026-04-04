@@ -24,6 +24,12 @@ enum DisplayColor {
     COLOR_ORANGE = 8
 };
 
+// Text alignment constants
+enum TextAlignment {
+    TEXT_ALIGN_LEFT = 0,
+    TEXT_ALIGN_RIGHT = 1
+};
+
 void Display_init(String model);
 void Display_clear();
 void Display_drawString(uint16_t x, uint16_t y, const String &text);
@@ -37,6 +43,9 @@ void Display_setColor(DisplayColor color);
 void Display_setPixel(uint16_t x, uint16_t y);
 void Display_setPixel(uint16_t x, uint16_t y, DisplayColor color);
 void Display_clear(DisplayColor color);
+
+// Text functions
+void Display_setTextAlignment(TextAlignment alignment);
 
 // Advanced drawing functions
 void Display_drawProgressBar(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t progress);

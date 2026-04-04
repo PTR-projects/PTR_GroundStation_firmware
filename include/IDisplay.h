@@ -23,6 +23,7 @@ public:
     
     // Color management
     virtual void setColor(DisplayColor color) = 0;
+    virtual void setTextAlignment(TextAlignment alignment) = 0;
     
     // Low-level primitives (must be implemented by each display)
     virtual void drawPixel(uint16_t x, uint16_t y) = 0;
