@@ -10,7 +10,6 @@
 
 
 // Support board list, select in platformio.ini configuration
-#if !defined(CI_BUILD)
 // #define LORA32_SX1278
 
 // #define T_BEAM_SX1262
@@ -35,8 +34,6 @@
 // #define T3_S3_V1_2_LR1121
 // #define HELTEC_TRACKER
 // #define HELTEC_LORA32
-#endif
-
 
 #define UNUSED_PIN                   (-1)
 
@@ -63,9 +60,9 @@
 #define BUTTON_PIN_MASK             GPIO_SEL_38
 #define I2C_SDA                     21
 #define I2C_SCL                     22
-#define OLED_RST                    -1
+#define OLED_RST                    UNUSED_PIN
 #define PMU_IRQ                     35
-#define RADIO_SCLK_PIN               5
+#define RADIO_SCLK_PIN              5
 #define RADIO_MISO_PIN              19
 #define RADIO_MOSI_PIN              27
 #define RADIO_CS_PIN                18
@@ -150,6 +147,8 @@
 #define SDCARD_MISO                 2
 #define SDCARD_SCLK                 14
 #define SDCARD_CS                   13
+#define SDCARD_DAT2                 12
+#define SDCARD_DAT1                 4
 #define BOARD_LED                   25
 #define LED_ON                      HIGH
 #define LED_OFF                     LOW
@@ -161,7 +160,7 @@
 #define BOARD_VARIANT_NAME          "T3 V1.6"
 
 //------- T3 v1.6 + SX1276 + TCXO -----------------------
-https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/blob/master/schematic/T3_V1.6.1.pdf
+// https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/blob/master/schematic/T3_V1.6.1.pdf
 #elif defined(T3_V1_6_SX1276_TCXO)
 #define HAS_RADIO
 #define HAS_SDCARD
@@ -190,6 +189,8 @@ https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/blob/master/schematic/T3_V1
 #define SDCARD_MISO                 2
 #define SDCARD_SCLK                 14
 #define SDCARD_CS                   13
+#define SDCARD_DAT2                 12
+#define SDCARD_DAT1                 4
 #define BOARD_LED                   25
 #define LED_ON                      HIGH
 #define LED_OFF                     LOW
@@ -201,7 +202,7 @@ https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/blob/master/schematic/T3_V1
 #define BOARD_VARIANT_NAME          "T3 V1.6 TCXO"
 
 //------- T3 v3.0 SX1262/SX1276/SX1278/LR1121 + TCXO -----------------------
-https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/blob/master/schematic/T3_V3.0.pdf
+// https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/blob/master/schematic/T3_V3.0.pdf
 #elif defined(T3_V3_0_SX1262) || defined(T3_V3_0_SX1276) || defined(T3_V3_0_SX1278) || defined(T3_V3_0_LR1121)
 #define HAS_RADIO
 #define HAS_SDCARD
@@ -287,6 +288,8 @@ https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/blob/master/schematic/T3_V3
 #define SDCARD_MISO                 2
 #define SDCARD_SCLK                 14
 #define SDCARD_CS                   13
+#define SDCARD_DAT1                 4
+#define SDCARD_DAT2                 12
 #define BOARD_LED                   37
 #define LED_ON                      HIGH
 #define LED_OFF                     LOW
@@ -333,8 +336,8 @@ https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/blob/master/schematic/T3_V3
 #define BUTTON_PIN_MASK             GPIO_SEL_38
 #define I2C_SDA                     21
 #define I2C_SCL                     22
-#define OLED_RST                   (-1)
-#define RADIO_SCLK_PIN               5
+#define OLED_RST                    UNUSED_PIN
+#define RADIO_SCLK_PIN              5
 #define RADIO_MISO_PIN              19
 #define RADIO_MOSI_PIN              27
 #define RADIO_CS_PIN                18
@@ -344,9 +347,16 @@ https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/blob/master/schematic/T3_V3
 // SX1276/78
 #define RADIO_DIO2_PIN              32
 #define BAT_ADC_PIN                 35
+#define BAT_ADC_MULTIPLIER          (2.0f)
 #define BOARD_LED                   4
 #define LED_ON                      LOW
 #define LED_OFF                     HIGH
+#define SDCARD_MOSI                 15
+#define SDCARD_MISO                 2
+#define SDCARD_SCLK                 14
+#define SDCARD_CS                   13
+#define SDCARD_DAT2                 12
+#define SDCARD_DAT1                 4
 
 #define DISP_ST7735_160_80     0    // Enable TFT
 #define DISP_SSD1306_128_64    1    // Enable SSD1306 OLED  
@@ -356,8 +366,10 @@ https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/blob/master/schematic/T3_V3
 //------- Heltec Tracker -----------------------
 // https://resource.heltec.cn/download/Wireless_Tracker/Wireless_Tacker1.1/HTIT-Tracker_V0.5.pdf
 #elif defined(HELTEC_TRACKER)
-#define USING_SX1262
 #define HAS_GPS
+#define HAS_DISPLAY
+
+#define USING_SX1262
 #define GPS_RX_PIN                  33
 #define GPS_TX_PIN                  34
 #define GPS_PPS_PIN                 36
@@ -371,21 +383,21 @@ https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/blob/master/schematic/T3_V3
 #define LCS_RES                     39
 #define LCD_CS                      38
 #define LCD_LED                     21
-#define RADIO_SCLK_PIN               9
+#define RADIO_SCLK_PIN              9
 #define RADIO_MISO_PIN              11
 #define RADIO_MOSI_PIN              10
-#define RADIO_CS_PIN                 8
+#define RADIO_CS_PIN                8
 #define RADIO_RST_PIN               12
 #define RADIO_DIO0_PIN             (-1)
 #define RADIO_DIO1_PIN              14
 #define RADIO_BUSY_PIN              13
-#define BAT_ADC_PIN                  1
-#define BAT_ADC_EN_PIN               2
-#define BAT_ADC_EN_LEVEL             HIGH
+#define BAT_ADC_PIN                 1
+#define BAT_ADC_EN_PIN              2
+#define BAT_ADC_EN_LEVEL            HIGH
 #define BAT_ADC_MULTIPLIER          (4.9f)
-#define VEXT_EN_PIN                  3
-#define VEXT_EN_LEVEL                HIGH
-#define GPS_BAUDRATE               115200
+#define VEXT_EN_PIN                 3
+#define VEXT_EN_LEVEL               HIGH
+#define GPS_BAUDRATE                115200io
 #define BOARD_LED                   18
 #define LED_ON                      HIGH
 #define LED_OFF                     LOW
@@ -403,20 +415,20 @@ https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/blob/master/schematic/T3_V3
 #define I2C_SDA                     17
 #define I2C_SCL                     18
 #define OLED_RST                    21
-#define RADIO_SCLK_PIN               9
+#define RADIO_SCLK_PIN              9
 #define RADIO_MISO_PIN              11
 #define RADIO_MOSI_PIN              10
-#define RADIO_CS_PIN                 8
+#define RADIO_CS_PIN                8
 #define RADIO_RST_PIN               12
 #define RADIO_DIO1_PIN              14
 #define RADIO_BUSY_PIN              13
-#define BAT_ADC_PIN                  1
+#define BAT_ADC_PIN                 1
 #define BAT_ADC_EN_PIN              37
 #define BAT_ADC_EN_LEVEL            LOW
 #define BAT_ADC_MULTIPLIER          (4.9f)
 #define VEXT_EN_PIN                 36
 #define VEXT_EN_LEVEL               LOW
-#define GPS_BAUDRATE               115200
+#define GPS_BAUDRATE                115200
 #define BOARD_LED                   35
 #define LED_ON                      HIGH
 #define LED_OFF                     LOW
