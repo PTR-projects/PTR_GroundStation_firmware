@@ -25,8 +25,8 @@ float Accessories_getVBat() {
         in += (uint32_t)analogRead(BAT_ADC_PIN);
     }
     in = (int)in / ADC_BATTERY_LEVEL_SAMPLES;
-    float bat_mv = ((float)in / 4096) * 3600 * 2;
-    bat_v = bat_mv / 1000;
+    float bat_mv = ((float)in / 4095.0f) * 3300.0f * 1.1f * (float)BAT_ADC_MULTIPLIER;
+    bat_v = bat_mv / 1000.0f;
 #endif
 
 #if defined(BAT_ADC_EN_PIN)

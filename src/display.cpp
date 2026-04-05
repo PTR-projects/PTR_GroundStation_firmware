@@ -582,7 +582,7 @@ public:
         delay(100);
 #endif
 
-        _drv = new Adafruit_SSD1306(128, 64, &Wire, OLED_RST);
+        _drv = new Adafruit_SSD1306(128, 64, &OLED_WIRE_PORT, OLED_RST);
         _drv->begin(SSD1306_SWITCHCAPVCC, DISPLAY_ADDR);
         //_drv->setRotation(1);
         _drv->clearDisplay();
@@ -722,7 +722,7 @@ private:
     
 public:
     SH110X_Display() {
-        _drv = new Adafruit_SH1106G(128, 64, &Wire, OLED_RST);
+        _drv = new Adafruit_SH1106G(128, 64, &OLED_WIRE_PORT, OLED_RST);
         _drv->begin(DISPLAY_ADDR);
         delay(100);
         
