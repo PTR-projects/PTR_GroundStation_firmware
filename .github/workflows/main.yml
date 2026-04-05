@@ -7,12 +7,25 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
         matrix:
-            targets: >
-              [ttgo-lora32-sx1278, ttgo-t-beam-sx1278, ttgo-t-beam-sx1276, ttgo-t-beam-sx1262, 
-              ttgo-t3-v1_3-sx1278, ttgo-t3-v1_3-sx1276, ttgo-t3-v1_6-sx1278, ttgo-t3-v1_6-sx1276-tcxo, 
-              ttgo-t3-v3_0-sx1262, ttgo-t3-v3_0-sx1276, ttgo-t3-v3_0-sx1278, ttgo-t3-v3_0-lr1121, 
-              ttgo-t3-s3-v1_2-sx1262, ttgo-t3-s3-v1_2-sx1276, ttgo-t3-s3-v1_2-sx1278, ttgo-t3-s3-v1_2-lr1121, 
-              heltec-tracker, heltec-lora32]
+            targets:
+              - ttgo-lora32-sx1278
+              - ttgo-t-beam-sx1278
+              - ttgo-t-beam-sx1276
+              - ttgo-t-beam-sx1262
+              - ttgo-t3-v1_3-sx1278
+              - ttgo-t3-v1_3-sx1276
+              - ttgo-t3-v1_6-sx1278
+              - ttgo-t3-v1_6-sx1276-tcxo
+              - ttgo-t3-v3_0-sx1262
+              - ttgo-t3-v3_0-sx1276
+              - ttgo-t3-v3_0-sx1278
+              - ttgo-t3-v3_0-lr1121, 
+              - ttgo-t3-s3-v1_2-sx1262
+              - ttgo-t3-s3-v1_2-sx1276
+              - ttgo-t3-s3-v1_2-sx1278
+              - ttgo-t3-s3-v1_2-lr1121, 
+              - heltec-tracker
+              - heltec-lora32
     steps:
       # Checkout repository
       - name: Checkout code
