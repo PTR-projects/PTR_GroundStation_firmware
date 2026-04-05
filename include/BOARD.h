@@ -397,7 +397,7 @@
 #define BAT_ADC_MULTIPLIER          (4.9f)
 #define VEXT_EN_PIN                 3
 #define VEXT_EN_LEVEL               HIGH
-#define GPS_BAUDRATE                115200io
+#define GPS_BAUDRATE                115200
 #define BOARD_LED                   18
 #define LED_ON                      HIGH
 #define LED_OFF                     LOW
