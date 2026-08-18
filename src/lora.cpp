@@ -188,3 +188,8 @@ float LORA_getCurrentFrequency() {
     return LORA_currentFrequencyMHz;
 }
 
+void LORA_sleep() {
+    enableInterrupt = false;
+    radio.sleep();
+}
+

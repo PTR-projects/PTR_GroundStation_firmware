@@ -18,6 +18,7 @@
 #include <SPI.h>
 #include <Wire.h>
 #include "display.h"
+#include "sleep.h"
 #include <ArduinoJson.h>
 
 static void getChipInfo();
@@ -46,6 +47,7 @@ void setup() {
   char ssid[12];
 
   BOARD_init(); Serial.println(F("BOARD init done!"));
+  Sleep_init();
   PWR_init(); Serial.println(F("PWR init done!"));
 
   if(FS_init()){
@@ -239,6 +241,7 @@ void loop() {
   GNSS_srv();
   Display_refresh();
   PWR_loop();
+  Sleep_loop();
 }
 
 static void settings_add_option(JsonArray options, const char* value, const char* label){
