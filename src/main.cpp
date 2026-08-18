@@ -8,6 +8,7 @@
 #include "LORA_typedefs.h"
 #include "TeleMetry.h"
 #include "lora.h"
+#include "lora_bands.h"
 #include "GNSS.h"
 #include "sensors.h"
 #include "SF_RSL.h"
@@ -284,10 +285,11 @@ static String settings_getJSON(){
   String frequency_value = String(preferences_get_frequency());
   frequency["value"] = frequency_value;
   JsonArray frequency_options = frequency["options"].to<JsonArray>();
-  settings_add_option(frequency_options, "434250", "CH0 434.250 MHz");
-  settings_add_option(frequency_options, "434375", "CH1 434.375 MHz");
-  settings_add_option(frequency_options, "434500", "CH2 434.500 MHz");
-  settings_add_option(frequency_options, "434625", "CH3 434.625 MHz");
+  for (int i = 0; i < LORA_CHANNEL_COUNT; i++) {
+    char value[12];
+    snprintf(value, sizeof(value), "%d", LORA_CHANNELS[i].freq_khz);
+    settings_add_option(frequency_options, value, LORA_CHANNELS[i].label);
+  }
   if(!settings_has_option(frequency_options, frequency_value)){
     settings_add_option(frequency_options, frequency_value.c_str(), frequency_value.c_str());
   }
@@ -349,7 +351,7 @@ static int settings_value_as_int(const JsonVariant& value){
 static bool settings_apply(const String& key, const JsonVariant& value, String& error){
   if(key == "frequency"){
     int freq = settings_value_as_int(value);
-    if(freq < 430000 || freq > 440000){
+    if(!lora_frequency_is_valid(freq)){
       error = "Frequency not in range";
       return false;
     }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "lora_bands.h"
+
 bool LORA_init();
 void LORA_startRX();
 void LORA_setFlag();

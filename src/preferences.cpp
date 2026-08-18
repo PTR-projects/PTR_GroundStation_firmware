@@ -4,6 +4,7 @@
 #include <string>
 #include <ArduinoJson.h>
 #include "preferences.h"
+#include "lora_bands.h"
 
 using namespace std;
 
@@ -25,14 +26,14 @@ int preferences_init(){
             return -1;
         }
 
-        config_data_d.frequency = 433250;
+        config_data_d.frequency = LORA_BAND_DEFAULT_KHZ;
         config_data_d.id = 0;
         config_data_d.id_filter = false;
 #if HAS_OLED_DISPLAY
         config_data_d.oled_driver = SH1106;
 #endif
 
-        config["configuration"]["frequency"] = 434250;
+        config["configuration"]["frequency"] = LORA_BAND_DEFAULT_KHZ;
         config["configuration"]["id"] = 0;
         config["configuration"]["id_filter"] = false;
 #if HAS_OLED_DISPLAY
@@ -50,8 +51,14 @@ int preferences_init(){
     }
 
     deserializeJson(config, file);
+    file.close();
 
+    bool freq_clamped = false;
     config_data_d.frequency = config["configuration"]["frequency"];
+    if (!lora_frequency_is_valid(config_data_d.frequency)) {
+        config_data_d.frequency = LORA_BAND_DEFAULT_KHZ;
+        freq_clamped = true;
+    }
     config_data_d.id = config["configuration"]["id"];
     if(config["configuration"]["id_filter"].is<bool>()){
         config_data_d.id_filter = config["configuration"]["id_filter"];
@@ -61,6 +68,10 @@ int preferences_init(){
 #if HAS_OLED_DISPLAY
     config_data_d.oled_driver = config["configuration"]["oled_driver"];
 #endif
+
+    if (freq_clamped) {
+        preferences_update();
+    }
 
     return 0;
 }
