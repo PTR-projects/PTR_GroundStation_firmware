@@ -37,6 +37,32 @@ bool GNSS_init(){
         //while (1);
         return false;
     }
+
+    // Przywroc fabryczna konfiguracje modulu - kasuje ustawienia
+    // zostawione np. przez inny firmware (ograniczony zestaw zdan NMEA,
+    // tryb oszczedzania energii itp.), ktore zapisuja sie trwale w
+    // pamieci modulu (BBR) i przetrwaja zmiane firmware na ESP32.
+    myGNSS.factoryDefault();
+    delay(1000); // daj modulowi chwile na restart i ponowne wystartowanie NMEA
+
+    // Wymus tryb ciaglego namierzania (bez oszczedzania energii).
+    myGNSS.powerSaveMode(false);
+
+    // Wylacz nadzorce anteny (UBX-CFG-ANT). Fabryczna konfiguracja chipa
+    // domyslnie wlacza sterowanie zasilaniem/wykrywanie zwarcia anteny,
+    // co na tej plytce nie pasuje do rzeczywistego podlaczenia anteny
+    // (nadzorca potrafil utykac w stanie INIT i blokowac odbior).
+    // flags=0x0000 = wylacz caly nadzor, modul ma po prostu nasluchiwac.
+    {
+        uint8_t antPayload[4] = {0x00, 0x00, 0x00, 0x00}; // flags=0x0000, pins=0x0000
+        ubxPacket antPacket;
+        antPacket.cls = UBX_CLASS_CFG;
+        antPacket.id  = UBX_CFG_ANT;
+        antPacket.len = 4;
+        antPacket.startingSpot = 0;
+        antPacket.payload = antPayload;
+        myGNSS.sendCommand(&antPacket, 1100);
+    }
 #endif
     return true;
 }
@@ -80,15 +106,17 @@ float GNSS_calcDir(float deviceAzimuth, float targetLat, float targetLon){
    if(myFix == 0)
         return 0.0f;
 
-    
-    float dy = targetLat - myLat;
-    float dx = cosf(M_PI/180.0f * myLat) * (targetLon - myLon);
-    float angle = atan2f(dy, dx);
+    float dy = targetLat - myLat;                                // skladowa polnocna
+    float dx = cosf(M_PI/180.0f * myLat) * (targetLon - myLon);  // skladowa wschodnia
+    float angle = atan2f(dx, dy); // 0=N, 90=E, 180=S, 270=W (standardowy azymut kompasowy)
 
     angle = angle * 180.0f / M_PI;
-    angle = angle - 90.0f;
     angle = angle + deviceAzimuth;
-    
+
+    // znormalizuj do zakresu 0-360
+    angle = fmodf(angle, 360.0f);
+    if(angle < 0.0f) angle += 360.0f;
+
     return angle;
 }
 
