@@ -417,6 +417,11 @@ public:
 
 class ST7735_Display : public IDisplay {
 private:
+    // Must outlive Adafruit_ST7735 — the driver stores a SPIClass*.
+    // Radio already owns the default SPI object (FSPI/SPI2). A second
+    // SPIClass(FSPI) calls spiStartBus() again and logs
+    // addApbChangeCallback(): duplicate func=...  Use HSPI (SPI3) instead.
+    SPIClass _spi;
     Adafruit_ST7735 *_drv;
     DisplayRenderer* _renderer;
     
@@ -426,7 +431,7 @@ private:
     }
     
 public:
-    ST7735_Display() {
+    ST7735_Display() : _spi(HSPI), _drv(nullptr), _renderer(nullptr) {
         pinMode(LCD_LED, OUTPUT);
         digitalWrite(LCD_LED, HIGH);
 #ifdef VEXT_EN_PIN
@@ -434,18 +439,14 @@ public:
         digitalWrite(VEXT_EN_PIN, VEXT_EN_LEVEL);
         delay(100);
 #endif
-        
-        
-        // Initialize hardware SPI with correct pins
-        // SPIClass hspi = SPIClass(HSPI);
-        // hspi.begin(LCD_SCLK, 46, LCD_MOSI, -1);
-        // hspi.setFrequency(1000000);
-        
-        // Use hardware SPI for much better performance
-        //_drv = new Adafruit_ST7735(&hspi, LCD_CS, LCD_RS, LCS_RES);
 
-        // Use software SPI
-        _drv = new Adafruit_ST7735(LCD_CS, LCD_RS, LCD_MOSI, LCD_SCLK, LCS_RES);
+        // Adafruit calls SPI.begin() with no pins; that is a no-op once the
+        // bus is started. Arduino-ESP32 2.x always spiAttachMISO(); S3 HSPI
+        // has no defaults, so MISO=-1 logs "HSPI Does not have default pins".
+        // Reuse MOSI (ST7735 is write-only). Leave SS unattached so Adafruit
+        // can toggle LCD_CS itself.
+        _spi.begin(LCD_SCLK, LCD_MISO, LCD_MOSI, -1);
+        _drv = new Adafruit_ST7735(&_spi, LCD_CS, LCD_RS, LCS_RES);
         _drv->initR(INITR_MINI160x80_PLUGIN);
         _drv->setRotation(1);
         
@@ -503,22 +504,13 @@ public:
     }
     
     void drawPixel(uint16_t x, uint16_t y, uint16_t color) override {
-        _drv->drawPixel(x, offsetY(y), ST77XX_WHITE);
+        _drv->drawPixel(x, offsetY(y), color);
     }
     
     void drawBuffer(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint16_t* buffer) override {
-        // Use startWrite/endWrite for better performance
         _drv->startWrite();
-        
-        // Set address window for bulk transfer
         _drv->setAddrWindow(x, offsetY(y), width, height);
-        
-        // Send pixels one by one but with optimized SPI transaction
-        for (uint32_t i = 0; i < width * height; i++) {
-            _drv->spiWrite(buffer[i] >> 8);      // High byte
-            _drv->spiWrite(buffer[i] & 0xFF);     // Low byte
-        }
-        
+        _drv->writePixels(const_cast<uint16_t*>(buffer), (uint32_t)width * height);
         _drv->endWrite();
     }
     
@@ -860,6 +852,11 @@ void Display_init(String model) {
     Serial.print("Type: ");
     Serial.println(model);
 
+    if (g_display) {
+        delete g_display;
+        g_display = nullptr;
+    }
+
 #if DISP_ST7735_160_80
     if (model == "ST7735") {
         g_display = new ST7735_Display();
@@ -923,7 +920,7 @@ void Display_refresh() {
     unsigned long now = millis();
     if ((now - Display_previousMillis) > Display_interval) {
         Display_previousMillis = now;
-        Serial.println("Tick");
+        
         if (g_display) {
             g_display->clear();
             g_display->drawRocketLaunch();

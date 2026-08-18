@@ -58,7 +58,7 @@ void IDisplay::drawRocketLaunch() {
 
     // RF freq and ID
     drawString(0, 53, String(LORA_getCurrentFrequency(), 2) + "MHz", 1);
-    drawString(0, 43, "ID: " + String(TM_getID()), 1);
+    drawString(0, 43, "ID: " + (TM_getFilterEnabled() ? String(TM_getID()) : String("ALL")), 1);
 
     // Battery and velocity
     Display_setTextAlignment(TEXT_ALIGN_RIGHT);

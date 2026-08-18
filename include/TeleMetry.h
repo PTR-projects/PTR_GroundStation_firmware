@@ -59,6 +59,9 @@ float TM_getVbat();
 
 bool TM_changeID(int id);
 int TM_getID();
+bool TM_setFilterEnabled(bool enabled);
+bool TM_getFilterEnabled();
+int TM_getKnownSenderIDs(uint16_t *ids, int max_ids);
 long LORA_getPacketHealth();
 float TM_getVertVel();
 String TM_getJSON();

@@ -19,13 +19,13 @@ uint8_t mySats = 0;
 
 bool GNSS_init(){
 #if defined(HAS_GPS)
-    gpsHardwareReset();
 
-#if defined (GPS_PPS_PIN)
+#if defined(GPS_PPS_PIN)
     pinMode(GPS_PPS_PIN, INPUT);
 #endif
 
-    Serial1.begin(GPS_BAUDRATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
+    gps_serial.begin(GPS_BAUDRATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
+    gpsHardwareReset();
 #endif
     return true;
 }
@@ -107,26 +107,20 @@ void GNSS_process(){
 }
 
 void gpsHardwareReset(){
-    
-#if defined (GPS_RST_PIN) && defined(HAS_GPS)
+#if defined(GPS_RST_PIN) && defined(GPS_RST_LEVEL) && defined(HAS_GPS)
     pinMode(GPS_RST_PIN, OUTPUT);
+    digitalWrite(GPS_RST_PIN, !GPS_RST_LEVEL);
 
-    // Empty input buffer
-    while (gps_serial.available())
+    while (gps_serial.available()) {
         gps_serial.read();
-
-    digitalWrite(GPS_RST_PIN, LOW);
-    delay(50);
-    digitalWrite(GPS_RST_PIN, HIGH);
-
-    // Reset is complete when the first valid message is received
-    while (1) {
-        while (gps_serial.available()) {
-        char c = gps_serial.read();
-        if (nmea.process(c))
-            return;
-
-        }
     }
+
+    digitalWrite(GPS_RST_PIN, GPS_RST_LEVEL);
+    delay(50);
+    digitalWrite(GPS_RST_PIN, !GPS_RST_LEVEL);
+
+    // Give the module time to boot. Do not block on NMEA — a missing or
+    // slow GPS must not hang setup(); GNSS_srv() will parse sentences later.
+    delay(100);
 #endif
 }

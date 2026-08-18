@@ -25,7 +25,8 @@ float dir2target = 0.0f;
 
 float TM_RSSI = -200.0f;
 
-int TM_ID = 1; //Target ID
+int TM_ID = 0;
+bool TM_id_filter = false;
 
 float verticalVel = 0.0f;
 
@@ -55,7 +56,7 @@ void TM_parser_FULLSTATE(float rssi, uint8_t * buf){
 	pPlayload = (kppacket_payload_legacyfull_t*)(buf + sizeof(kppacket_legacyheader_t));
 
 	// Check if packet is destined to this device
-	if((pHeader->sender_id != TM_ID) && (TM_ID != 0)) {
+	if(TM_id_filter && (pHeader->sender_id != TM_ID)) {
 		return;
 	}
 
@@ -183,7 +184,7 @@ void TM_parser_TRACKER(float rssi, uint8_t * buf){
 	pPlayload = (kppacket_payload_rocket_tracker_t*)(buf + sizeof(kppacket_header_t));
 
 	// Check if packet is destined to this device
-	if((pHeader->sender_id != TM_ID) && (TM_ID != 0)) {
+	if(TM_id_filter && (pHeader->sender_id != TM_ID)) {
 		return;
 	}
 
@@ -369,6 +370,17 @@ bool TM_changeID(int id) {
 	return true;
 }
 
+bool TM_setFilterEnabled(bool enabled) {
+	Serial.printf("ID filter %s \n", enabled ? "ON" : "OFF");
+	TM_id_filter = enabled;
+	preferences_update_id_filter(enabled);
+	return true;
+}
+
+bool TM_getFilterEnabled() {
+	return TM_id_filter;
+}
+
 int TM_getID() {
 	return TM_ID;
 }
@@ -404,6 +416,22 @@ void TM_updateHistory(uint16_t sender_id, float latitude, float longitude, float
 	history_table[index].altitude 	= altitude;
 }
 
+
+int TM_getKnownSenderIDs(uint16_t *ids, int max_ids){
+	if(ids == NULL || max_ids <= 0){
+		return 0;
+	}
+
+	uint16_t table_size = sizeof(history_table) / sizeof(TM_history_table_entry_t);
+	int count = 0;
+	for(uint16_t i = 0; i < table_size && count < max_ids; i++){
+		if(history_table[i].sender_id == 0){
+			break;
+		}
+		ids[count++] = history_table[i].sender_id;
+	}
+	return count;
+}
 
 String TM_getJSON() {
   JsonDocument doc;

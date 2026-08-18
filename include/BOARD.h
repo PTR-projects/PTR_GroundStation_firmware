@@ -374,11 +374,13 @@
 #define GPS_TX_PIN                  34
 #define GPS_PPS_PIN                 36
 #define GPS_RST_PIN                 35
-#define GPS_BAUDRATE                115200   
+#define GPS_BAUDRATE                115200  
+#define GPS_RST_LEVEL               LOW 
 #define BUTTON_PIN                  0
 #define BUTTON_PIN_MASK             GPIO_SEL_0
 #define LCD_MOSI                    42
 #define LCD_SCLK                    41
+#define LCD_MISO                    LCD_MOSI // write-only ST7735; S3 HSPI begin() cannot take MISO=-1
 #define LCD_RS                      40
 #define LCS_RES                     39
 #define LCD_CS                      38
@@ -394,10 +396,10 @@
 #define BAT_ADC_PIN                 1
 #define BAT_ADC_EN_PIN              2
 #define BAT_ADC_EN_LEVEL            HIGH
+#define BAT_ADC_EN_HELTEC_FIX
 #define BAT_ADC_MULTIPLIER          (4.9f)
 #define VEXT_EN_PIN                 3
 #define VEXT_EN_LEVEL               HIGH
-#define GPS_BAUDRATE                115200
 #define BOARD_LED                   18
 #define LED_ON                      HIGH
 #define LED_OFF                     LOW
