@@ -318,7 +318,7 @@ void PWR_loop(){
     pmuInterrupt = false;
     // Get PMU Interrupt Status Register
     uint32_t status = PMU->getIrqStatus();
-    Serial.print("STATUS => HEX:");
+    Serial.print("[PWR] STATUS => HEX:");
     Serial.print(status, HEX);
     Serial.print(" BIN:");
     Serial.println(status, BIN);
@@ -356,4 +356,26 @@ void PWR_loop(){
 
 float PWR_getBAT(){
     return vbat;
+}
+
+void PWR_prepareSleep(){
+#ifdef HAS_PMU
+    if (!PMU) {
+        return;
+    }
+
+    PMU->setChargingLedMode(XPOWERS_CHG_LED_OFF);
+
+    if (PMU->getChipModel() == XPOWERS_AXP192) {
+        PMU->disablePowerOutput(XPOWERS_LDO2); // LoRa
+        PMU->disablePowerOutput(XPOWERS_LDO3); // GPS
+    } else if (PMU->getChipModel() == XPOWERS_AXP2101) {
+        if (PMU->isChannelAvailable(XPOWERS_ALDO2)) {
+            PMU->disablePowerOutput(XPOWERS_ALDO2); // LoRa
+        }
+        if (PMU->isChannelAvailable(XPOWERS_ALDO3)) {
+            PMU->disablePowerOutput(XPOWERS_ALDO3); // GPS
+        }
+    }
+#endif
 }

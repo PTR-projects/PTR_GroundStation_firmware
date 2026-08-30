@@ -2,110 +2,149 @@
 <html>
     <head>
         <title>KPPTR</title>
+        <link rel="stylesheet" href="/styles.css">
         <script>
-            function clickedDelete()
-            {
-                if(!confirm('Are you sure to delete all files?')) {
-                }
-                else{
-                    window.location.href='delete';
+            function POST_json(url, data) {
+                return fetch(url, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(data)
+                }).then(function(response) {
+                    return response.json().then(function(body) {
+                        return {ok: response.ok && body.ok !== false, body: body};
+                    });
+                });
+            }
+
+            function settingValue(setting) {
+                return String(setting.value);
+            }
+
+            function toggleNestedInput(wrap, enabled) {
+                var nested = wrap.querySelector(".setting-input");
+                if (nested) {
+                    nested.style.display = enabled ? "block" : "none";
                 }
             }
 
-            function sendFrequency() {
-                var freq_valid = true;
-                var frequency = document.getElementById("frequencyInput").value;
-                console.log('freq="%d"', frequency);
+            function collectSettings(root) {
+                var payload = [];
+                root.querySelectorAll(".setting").forEach(function(wrap) {
+                    var select = wrap.querySelector("select");
+                    if (!select) {
+                        return;
+                    }
+                    var key = select.getAttribute("data-key");
+                    var type = select.getAttribute("data-type");
+                    var value = select.value;
+                    if (type === "bool") {
+                        payload.push({key: key, value: value === "true"});
+                    } else {
+                        payload.push({key: key, value: value});
+                    }
 
-                if(frequency < 400000){
-                    window.alert("Frequency too low! Min. frequency = 400000 kHz");
-                    freq_valid = false
-                }
-
-                if(frequency > 490000){
-                    window.alert("Frequency too high! Max. frequency = 490000 kHz");
-                    freq_valid = false;
-                }
-
-                if(freq_valid){
-                    var data = 'freq=' + frequency;
-                    console.log("POST_simple return: " +  POST_simple("/setFreq", data));
-                }
-            }
-            
-            function sendID() {
-                var ID_valid = true;
-                var newID = document.getElementById("IDInput").value;
-                console.log('code="%d"', newID);
-
-                if((newID >= 0) && (newID <= 65535)){
-                    var data = 'code=' + newID;
-                    console.log("POST_simple return: " +  POST_simple("/setID", data));
-                } else {
-                    window.alert("ID invalid! Min = 0, Max = 65535");
-                } 
-            }   
-
-            function sendOLED() {
-                var oled_valid = true;
-                var newOLED = document.getElementById("oled_driver").value;
-                console.log('driver="%s"', newOLED);
-
-                if((newOLED == "SH1106") || (newOLED == "SSD1306")){
-                    var data = 'driver=' + newOLED;
-                    console.log("POST_simple return: " +  POST_simple("/setOLED", data));
-                } else {
-                    window.alert("Invalid OLED driver selected!");
-                } 
-            }  
-
-            function POST_simple(url, data) {
-                console.log("Fetching url: %s with data: %s", url, data);
-                return fetch(url, {method: "POST", headers: {'Content-Type': 'application/x-www-form-urlencoded'}, body: data});
+                    var input = wrap.querySelector("input[data-key]");
+                    if (input) {
+                        payload.push({key: input.getAttribute("data-key"), value: input.value});
+                    }
+                });
+                return payload;
             }
 
-            function download_log(){
-                const a = document.createElement('a')
-                a.href = "download"
-                a.download = "load.csv"
-                document.body.appendChild(a)
-                a.click()
-                document.body.removeChild(a)
+            function renderSettings(settings) {
+                var root = document.getElementById("settings");
+                root.innerHTML = "";
+
+                if (!settings || settings.length === 0) {
+                    root.textContent = "No settings available.";
+                    return;
+                }
+
+                settings.forEach(function(setting) {
+                    var wrap = document.createElement("div");
+                    wrap.className = "setting";
+
+                    var label = document.createElement("label");
+                    label.setAttribute("for", "setting-" + setting.key);
+                    label.textContent = setting.label;
+
+                    var select = document.createElement("select");
+                    select.id = "setting-" + setting.key;
+                    select.setAttribute("data-key", setting.key);
+                    select.setAttribute("data-type", setting.type || "select");
+
+                    (setting.options || []).forEach(function(option) {
+                        var item = document.createElement("option");
+                        item.value = String(option.value);
+                        item.textContent = option.label;
+                        if (String(option.value) === settingValue(setting)) {
+                            item.selected = true;
+                        }
+                        select.appendChild(item);
+                    });
+
+                    wrap.appendChild(label);
+                    wrap.appendChild(select);
+
+                    if (setting.input && setting.input.type === "number") {
+                        var inputWrap = document.createElement("div");
+                        inputWrap.className = "setting-input";
+
+                        var input = document.createElement("input");
+                        input.type = "number";
+                        input.id = "setting-" + setting.input.key;
+                        input.setAttribute("data-key", setting.input.key);
+                        input.min = setting.input.min;
+                        input.max = setting.input.max;
+                        input.value = setting.input.value;
+                        inputWrap.appendChild(input);
+                        wrap.appendChild(inputWrap);
+
+                        toggleNestedInput(wrap, settingValue(setting) === "true");
+                        select.addEventListener("change", function() {
+                            toggleNestedInput(wrap, select.value === "true");
+                        });
+                    }
+
+                    root.appendChild(wrap);
+                });
+
+                var save = document.createElement("button");
+                save.type = "button";
+                save.className = "save-settings-button";
+                save.textContent = "Save settings";
+                save.addEventListener("click", saveSettings);
+                root.appendChild(save);
             }
+
+            function saveSettings() {
+                var root = document.getElementById("settings");
+                var payload = {settings: collectSettings(root)};
+                POST_json("/settings", payload).then(function(result) {
+                    if (!result.ok) {
+                        window.alert((result.body && result.body.error) || "Failed to save settings");
+                    }
+                    return loadSettings();
+                }).catch(function() {
+                    window.alert("Failed to save settings");
+                    loadSettings();
+                });
+            }
+
+            function loadSettings() {
+                return fetch("/settings")
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) { renderSettings(data.settings); })
+                    .catch(function() {
+                        document.getElementById("settings").textContent = "Failed to load settings from firmware.";
+                    });
+            }
+
+            document.addEventListener("DOMContentLoaded", loadSettings);
         </script>
-            
     </head>
-    <body style="text-align:center; max-width:800px; margin:auto;">
-        <br><br><br><br><br>
-        <!--.
-        <button onclick="download_log()" style="position:center;color:green; cursor:pointer; font-size:100px; width:100%; height:250px;">Download telemetry file</button>
-        <br><br><br><br><br>
-        <button onclick="clickedDelete()" style="position:center; color:red; cursor:pointer; font-size:100px; width:100%; height:250px;">Delete telemetry file</button>
-        <br><br><br><br><br>
-        -->
-        <input type="button" onclick="location.href='/tracker_list.html';" value="Tracker list" style="position:center;color:rgb(43, 0, 255); cursor:pointer; font-size:100px; width:100%; height:250px;"/>
-        <br><br><br><br><br>
-        <p style="font-size:45px; padding:0px" margin-bottom: 0px;><b>Change Frequency [kHz]</b></p>
-        <p style="font-size:25px">
-        CH0 434250 => 434.250MHz</br>
-        CH1 434375 => 434.375MHz</br>
-        CH2 434500 => 434.500MHz</br>
-        CH3 434625 => 433.625MHz</p>
-        <input type="number" id="frequencyInput" placeholder="ex. 434250" style="font-size:40px; width: 300px">
-        <button onclick="sendFrequency()" style="font-size:38px">Change Frequency</button>
-
-        <br><br>
-        <h2 style="font-size:45px" margin-bottom: 0px;>Change filter ID (0 = receive all)</h2>
-        <input type="number" id="IDInput" placeholder="Enter ID" style="font-size:40px; width: 300px">
-        <button onclick="sendID()" style="font-size:32px">Change ID</button>
-
-        <br><br>
-        <h2 style="font-size:45px" margin-bottom: 0px;>Change OLED driver</h2>
-        <select name="oled_driver" id="oled_driver" style="font-size:32px">
-            <option value="SH1106">SH1106</option>
-            <option value="SSD1306">SSD1306</option>
-          </select>
-        <button onclick="sendOLED()" style="font-size:32px">Change driver</button>
+    <body class="settings-page">
+        <input type="button" class="tracker-list-button" onclick="location.href='/tracker_list.html';" value="Tracker list"/>
+        <div id="settings">Loading settings...</div>
     </body>
 </html>
-

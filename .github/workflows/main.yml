@@ -7,14 +7,56 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
         matrix:
-            targets: [ttgo-t-beam-sx1278, ttgo-t-beam-sx1276, ttgo-t-beam-sx1262, ttgo-t3-v1_3-sx1278, ttgo-t3-v1_3-sx1276, ttgo-t3-v1_6-sx1278, ttgo-t3-v1_6-sx1276]
+            targets:
+              - ttgo-lora32-sx1278
+              - ttgo-t-beam-sx1278
+              - ttgo-t-beam-sx1276
+              - ttgo-t-beam-sx1276-868
+              - ttgo-t-beam-sx1276-915
+              - ttgo-t-beam-sx1262
+              - ttgo-t-beam-sx1262-868
+              - ttgo-t-beam-sx1262-915
+              - ttgo-t3-v1_3-sx1278
+              - ttgo-t3-v1_3-sx1276
+              - ttgo-t3-v1_3-sx1276-868
+              - ttgo-t3-v1_3-sx1276-915
+              - ttgo-t3-v1_6-sx1278
+              - ttgo-t3-v1_6-sx1276-tcxo
+              - ttgo-t3-v1_6-sx1276-tcxo-868
+              - ttgo-t3-v1_6-sx1276-tcxo-915
+              - ttgo-t3-v3_0-sx1262
+              - ttgo-t3-v3_0-sx1262-868
+              - ttgo-t3-v3_0-sx1262-915
+              - ttgo-t3-v3_0-sx1276
+              - ttgo-t3-v3_0-sx1276-868
+              - ttgo-t3-v3_0-sx1276-915
+              - ttgo-t3-v3_0-sx1278
+              - ttgo-t3-v3_0-lr1121
+              - ttgo-t3-v3_0-lr1121-868
+              - ttgo-t3-v3_0-lr1121-915
+              - ttgo-t3-s3-v1_2-sx1262
+              - ttgo-t3-s3-v1_2-sx1262-868
+              - ttgo-t3-s3-v1_2-sx1262-915
+              - ttgo-t3-s3-v1_2-sx1276
+              - ttgo-t3-s3-v1_2-sx1276-868
+              - ttgo-t3-s3-v1_2-sx1276-915
+              - ttgo-t3-s3-v1_2-sx1278
+              - ttgo-t3-s3-v1_2-lr1121
+              - ttgo-t3-s3-v1_2-lr1121-868
+              - ttgo-t3-s3-v1_2-lr1121-915
+              - heltec-tracker
+              - heltec-tracker-868
+              - heltec-tracker-915
+              - heltec-lora32
+              - heltec-lora32-868
+              - heltec-lora32-915
     steps:
       # Checkout repository
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       
       - name: Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cache/pip

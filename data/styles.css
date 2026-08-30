@@ -35,6 +35,53 @@ button:hover {
     background-color: #45a049;
 }
 
+.settings-page {
+    text-align: center;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.tracker-list-button {
+    color: rgb(43, 0, 255);
+    cursor: pointer;
+    font-size: 100px;
+    width: 100%;
+    height: 250px;
+    margin: 40px 0;
+}
+
+.setting {
+    margin: 40px 0;
+}
+
+.setting label {
+    display: block;
+    font-size: 36px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+.setting-input {
+    margin-top: 16px;
+}
+
+.setting select,
+.setting input[type="number"] {
+    font-size: 32px;
+    min-width: 300px;
+    padding: 8px;
+}
+
+.save-settings-button {
+    font-size: 38px;
+    padding: 20px 40px;
+    margin: 20px 0 40px;
+    cursor: pointer;
+    width: 100%;
+    height: 100px;
+}
+
 @media screen and (max-width: 768px) {
     .time-column, .altitude-column, .map-column {
         display: none;

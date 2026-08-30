@@ -1,20 +1,27 @@
 #include "BOARD.h"
 #include "LORA_typedefs.h"
 #include "lora.h"
+#include "lora_bands.h"
 #include "TeleMetry.h"
 #include <SPI.h>
 #include <RadioLib.h>
 #include "FileSys.h"
 #include "preferences.h"
 
+// RadioLib uses the global SPI object. On ESP32-S3 that is FSPI (SPI2),
+// started in BOARD_init() with the radio pins. TFT uses a separate HSPI
+// (SPI3) instance — do not pass FSPI to the display.
 #if defined(USING_SX1276)
-static SX1276 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
+static SX1276 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN, SPI);
 
 #elif defined(USING_SX1278)
-static SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
+static SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN, SPI);
 
 #elif defined(USING_SX1262)
-static SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+static SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN, SPI);
+
+#elif defined(USING_LR1121)
+static LR1121 radio = new Module(RADIO_CS_PIN, RADIO_DIO9_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN, SPI);
 
 #endif
 
@@ -35,7 +42,7 @@ static uint16_t packetCounter[5] = {0,0,0,0,0};
 static float packet_rate = 0;
 static uint8_t LORA_newPacketReceivedOLED = 0;
 
-float LORA_currentFrequencyMHz = 434.25f;
+float LORA_currentFrequencyMHz = (float)LORA_BAND_DEFAULT_KHZ / 1000.0f;
 
 bool LORA_init(){
     Serial.print(F("[LORA] Initializing ... "));
@@ -48,7 +55,7 @@ bool LORA_init(){
         Serial.println(state);
     }
 
-    radio.setFrequency(433.0f);
+    radio.setFrequency((float)LORA_BAND_DEFAULT_KHZ / 1000.0f);
     radio.setBandwidth(125);        // 7.8, 10.4, 15.6, 20.8, 31.25, 41.7, 62.5, 125, 250, 500
     radio.setSpreadingFactor(8);   // 6 - 12
     radio.setCodingRate(5);
@@ -164,6 +171,11 @@ float LORA_getPacketRate(){
 }
 
 bool LORA_changeFrequency(int freq){
+    if (!lora_frequency_is_valid(freq)) {
+        Serial.printf("[LORA] Frequency %d kHz is not in this band\n", freq);
+        return false;
+    }
+
     double temp = (double)freq / 1000.0;
 
     Serial.printf("Changing frequency to %f \n", (float)temp);
@@ -180,5 +192,10 @@ bool LORA_changeFrequency(int freq){
 
 float LORA_getCurrentFrequency() {
     return LORA_currentFrequencyMHz;
+}
+
+void LORA_sleep() {
+    enableInterrupt = false;
+    radio.sleep();
 }
 

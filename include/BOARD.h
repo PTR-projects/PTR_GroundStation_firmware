@@ -9,13 +9,12 @@
 #pragma once
 
 
-// Support board list , Macro definition below, select the board definition to be used
-#if !defined(CI_BUILD)
-//#define LORA32_SX1278
+// Support board list, select in platformio.ini configuration
+// #define LORA32_SX1278
 
 // #define T_BEAM_SX1262
 // #define T_BEAM_SX1276
-#define T_BEAM_SX1278
+// #define T_BEAM_SX1278
 
 // #define T3_V1_3_SX1276
 // #define T3_V1_3_SX1278
@@ -24,54 +23,46 @@
 // #define T3_V1_6_SX1278
 
 // #define T3_V1_6_SX1276_TCXO
-// #define T3_V3_0_SX1276_TCXO
-
-// #define T_BEAM_S3_SUPREME
+// #define T3_V3_0_SX1262
+// #define T3_V3_0_SX1276
+// #define T3_V3_0_SX1278
+// #define T3_V3_0_LR1121
 
 // #define T3_S3_V1_2_SX1262
 // #define T3_S3_V1_2_SX1276
 // #define T3_S3_V1_2_SX1278
-// #define T3_S3_V1_2_SX1280
-// #define T3_S3_V1_2_SX1280_PA
 // #define T3_S3_V1_2_LR1121
+// #define HELTEC_TRACKER
+// #define HELTEC_LORA32
 
-// #define T_MOTION
+#define UNUSED_PIN                   (-1)
 
-// #define T3_C6
-
-// #define T_BEAM_S3_BPF
-#endif
-
-
-#define UNUSED_PIN                   (0)
-
+//------- T-BEAM + SX1262/SX1276/SX1278 -----------------------
+// https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/blob/master/schematic/LilyGo_TBeam_V1.2-lastest.pdf
 #if defined(T_BEAM_SX1262) || defined(T_BEAM_SX1276) || defined(T_BEAM_SX1278)
-
+#define HAS_GPS
+#define HAS_PMU
+#define HAS_RADIO
+#define HAS_DISPLAY
 
 #if   defined(T_BEAM_SX1262)
-#ifndef USING_SX1262
 #define USING_SX1262
-#endif
 #elif defined(T_BEAM_SX1276)
-#ifndef USING_SX1276
 #define USING_SX1276
-#endif
 #elif defined(T_BEAM_SX1278)
-#ifndef USING_SX1278
 #define USING_SX1278
-#endif
 #endif // T_BEAM_SX1262
-
 
 #define GPS_RX_PIN                  34
 #define GPS_TX_PIN                  12
+#define GPS_BAUDRATE                9600
 #define BUTTON_PIN                  38
 #define BUTTON_PIN_MASK             GPIO_SEL_38
 #define I2C_SDA                     21
 #define I2C_SCL                     22
+#define OLED_RST                    UNUSED_PIN
 #define PMU_IRQ                     35
-
-#define RADIO_SCLK_PIN               5
+#define RADIO_SCLK_PIN              5
 #define RADIO_MISO_PIN              19
 #define RADIO_MOSI_PIN              27
 #define RADIO_CS_PIN                18
@@ -82,42 +73,31 @@
 #define RADIO_DIO2_PIN              32
 // SX1262
 #define RADIO_BUSY_PIN              32
-
-
 #define BOARD_LED                   4
 #define LED_ON                      LOW
 #define LED_OFF                     HIGH
+#define PMU_WIRE_PORT               Wire
 
-#define GPS_BAUD_RATE               9600
-#define HAS_GPS
-#define HAS_DISPLAY                 //Optional, bring your own board, no OLED !!
-#define HAS_PMU
-
+#define DISP_ST7735_160_80     0    // Enable TFT
+#define DISP_SSD1306_128_64    1    // Enable SSD1306 OLED  
+#define DISP_SH110X_128_64     1    // Disable SH110X OLED
 #define BOARD_VARIANT_NAME          "T-Beam"
 
+//------- T3 v1.3 + SX1276/SX1278 -----------------------
+// https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/blob/master/schematic/T3_V1.3.pdf
 #elif defined(T3_V1_3_SX1276) || defined(T3_V1_3_SX1278)
-
+#define HAS_RADIO
+#define HAS_DISPLAY
 
 #if   defined(T3_V1_3_SX1276)
-
-#ifndef USING_SX1276
 #define USING_SX1276
-#endif
-
 #elif defined(T3_V1_3_SX1278)
-
-#ifndef USING_SX1278
 #define USING_SX1278
-#endif
-
 #endif // T3_V1_3_SX1276
-
-
 
 #define I2C_SDA                     21
 #define I2C_SCL                     22
 #define OLED_RST                    UNUSED_PIN
-
 #define RADIO_SCLK_PIN              5
 #define RADIO_MISO_PIN              19
 #define RADIO_MOSI_PIN              27
@@ -125,34 +105,33 @@
 #define RADIO_DIO0_PIN              26
 #define RADIO_RST_PIN               14
 #define RADIO_DIO1_PIN              33
-
 // SX1276/78
 #define RADIO_DIO2_PIN              32
 // SX1262
 #define RADIO_BUSY_PIN              32
-
-
-#define ADC_PIN                     35
-#define HAS_DISPLAY
+#define BAT_ADC_PIN                 35
+#define BAT_ADC_MULTIPLIER          (2.0f)
+#define DISP_ST7735_160_80     0    // Enable TFT
+#define DISP_SSD1306_128_64    1    // Enable SSD1306 OLED  
+#define DISP_SH110X_128_64     1    // Disable SH110X OLED
 #define BOARD_VARIANT_NAME          "T3 V1.3"
 
+//------- T3 v1.6 + SX1276/8 -----------------------
+// https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/blob/master/schematic/T3_V1.6.1.pdf
 #elif defined(T3_V1_6_SX1276) || defined(T3_V1_6_SX1278)
-
+#define HAS_RADIO
+#define HAS_SDCARD
+#define HAS_DISPLAY
 
 #if   defined(T3_V1_6_SX1276)
-#ifndef USING_SX1276
 #define USING_SX1276
-#endif
 #elif defined(T3_V1_6_SX1278)
-#ifndef USING_SX1278
 #define USING_SX1278
-#endif
 #endif // T3_V1_6_SX1276
 
 #define I2C_SDA                     21
 #define I2C_SCL                     22
 #define OLED_RST                    UNUSED_PIN
-
 #define RADIO_SCLK_PIN              5
 #define RADIO_MISO_PIN              19
 #define RADIO_MOSI_PIN              27
@@ -164,35 +143,34 @@
 #define RADIO_DIO2_PIN              32
 // SX1262
 #define RADIO_BUSY_PIN              32
-
 #define SDCARD_MOSI                 15
 #define SDCARD_MISO                 2
 #define SDCARD_SCLK                 14
 #define SDCARD_CS                   13
-
+#define SDCARD_DAT2                 12
+#define SDCARD_DAT1                 4
 #define BOARD_LED                   25
 #define LED_ON                      HIGH
 #define LED_OFF                     LOW
-
-#define ADC_PIN                     35
 #define BAT_ADC_PIN                 35
+#define BAT_ADC_MULTIPLIER          (2.0f)
+#define DISP_ST7735_160_80     0    // Enable TFT
+#define DISP_SSD1306_128_64    1    // Enable SSD1306 OLED  
+#define DISP_SH110X_128_64     1    // Disable SH110X OLED
+#define BOARD_VARIANT_NAME          "T3 V1.6"
 
+//------- T3 v1.6 + SX1276 + TCXO -----------------------
+// https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/blob/master/schematic/T3_V1.6.1.pdf
+#elif defined(T3_V1_6_SX1276_TCXO)
+#define HAS_RADIO
 #define HAS_SDCARD
 #define HAS_DISPLAY
 
-#define BOARD_VARIANT_NAME          "T3 V1.6"
-
-
-#elif defined(T3_V1_6_SX1276_TCXO)
-
-#ifndef USING_SX1276
+// SX1276
 #define USING_SX1276
-#endif
-
 #define I2C_SDA                     21
 #define I2C_SCL                     22
 #define OLED_RST                    UNUSED_PIN
-
 #define RADIO_SCLK_PIN              5
 #define RADIO_MISO_PIN              19
 #define RADIO_MOSI_PIN              27
@@ -207,397 +185,159 @@
 // TCXO pin must be set to HIGH before enabling Radio
 #define RADIO_TCXO_ENABLE           33
 #define RADIO_BUSY_PIN              32
-
 #define SDCARD_MOSI                 15
 #define SDCARD_MISO                 2
 #define SDCARD_SCLK                 14
 #define SDCARD_CS                   13
-
+#define SDCARD_DAT2                 12
+#define SDCARD_DAT1                 4
 #define BOARD_LED                   25
 #define LED_ON                      HIGH
 #define LED_OFF                     LOW
+#define BAT_ADC_PIN                 35
+#define BAT_ADC_MULTIPLIER          (2.0f)
+#define DISP_ST7735_160_80     0    // Enable TFT
+#define DISP_SSD1306_128_64    1    // Enable SSD1306 OLED  
+#define DISP_SH110X_128_64     1    // Disable SH110X OLED
+#define BOARD_VARIANT_NAME          "T3 V1.6 TCXO"
 
-#define ADC_PIN                     35
-
+//------- T3 v3.0 SX1262/SX1276/SX1278/LR1121 + TCXO -----------------------
+// https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/blob/master/schematic/T3_V3.0.pdf
+#elif defined(T3_V3_0_SX1262) || defined(T3_V3_0_SX1276) || defined(T3_V3_0_SX1278) || defined(T3_V3_0_LR1121)
+#define HAS_RADIO
 #define HAS_SDCARD
 #define HAS_DISPLAY
 
-#define BOARD_VARIANT_NAME          "T3 V1.6 TCXO"
-
-
-
-#elif defined(T3_V3_0)
-
+#if   defined(T3_V3_0_SX1262)
+#define USING_SX1262
+#elif defined(T3_V3_0_SX1276)
+#define USING_SX1276
+#elif defined(T3_V3_0_SX1278)
+#define USING_SX1278
+#elif defined(T3_V3_0_LR1121)
+#define USING_LR1121
+#endif // T3_V3_0_SX1262
 
 #define I2C_SDA                     21
 #define I2C_SCL                     22
 #define OLED_RST                    4
-
 #define RADIO_SCLK_PIN              5
 #define RADIO_MISO_PIN              19
 #define RADIO_MOSI_PIN              27
 #define RADIO_CS_PIN                18
 #define RADIO_RST_PIN               23
-
 // TCXO pin must be set to HIGH before enabling Radio
 #define RADIO_TCXO_ENABLE           12  //only sx1276 tcxo version
 #define RADIO_BUSY_PIN              32
-
-
+// SX1262
 #if defined(USING_SX1262)
-
 #define RADIO_DIO1_PIN              26
 #define RADIO_BUSY_PIN              32
-
+// SX1276/78
 #elif defined(USING_SX1276) || defined(USING_SX1278)
-//!SX1276/78 module only
-
 #define RADIO_DIO0_PIN              26
 #define RADIO_DIO1_PIN              32
-
+// LR1121
 #elif defined(USING_LR1121)
-
 #define RADIO_DIO9_PIN              26      //LR1121 DIO9  
 #define RADIO_BUSY_PIN              32      //LR1121 BUSY  
-
 #endif
-
 #define SDCARD_MOSI                 15
 #define SDCARD_MISO                 2
 #define SDCARD_SCLK                 14
 #define SDCARD_CS                   13
-
 #define BOARD_LED                   25
 #define LED_ON                      HIGH
 #define LED_OFF                     LOW
+#define BAT_ADC_PIN                 35
+#define BAT_ADC_MULTIPLIER          (2.0f)
+#define DISP_ST7735_160_80     0    // Enable TFT
+#define DISP_SSD1306_128_64    1    // Enable SSD1306 OLED  
+#define DISP_SH110X_128_64     1    // Disable SH110X OLED
+#define BOARD_VARIANT_NAME          "T3 V3.0"
+#define BUTTON_PIN                  0
 
-#define ADC_PIN                     35
-
+//------- T3 S3 v1.2 SX1262/SX1276/SX1278/LR1121 -----------------------
+// https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/blob/master/schematic/T3_S3_V1.2.pdf
+#elif   defined(T3_S3_V1_2_SX1262)    ||   \
+        defined(T3_S3_V1_2_SX1276)    ||   \
+        defined(T3_S3_V1_2_SX1278)    ||   \
+        defined(T3_S3_V1_2_LR1121)
+#define HAS_RADIO
 #define HAS_SDCARD
 #define HAS_DISPLAY
 
-#define BOARD_VARIANT_NAME          "T3 V3.0"
-
-#define BUTTON_PIN                  0
-#define BAT_ADC_PIN                 35
-
-
-#elif   defined(T3_S3_V1_2_SX1262)    ||   defined(ARDUINO_LILYGO_T3S3_SX1262)   ||    \
-        defined(T3_S3_V1_2_SX1276)    ||   defined(ARDUINO_LILYGO_T3S3_SX1276)   ||    \
-        defined(T3_S3_V1_2_SX1278)    ||   defined(ARDUINO_LILYGO_T3S3_SX1278)   ||    \
-        defined(T3_S3_V1_2_SX1280)    ||   defined(ARDUINO_LILYGO_T3S3_SX1280)   ||    \
-        defined(T3_S3_V1_2_SX1280_PA) ||   defined(ARDUINO_LILYGO_T3S3_SX1280PA) ||      \
-        defined(T3_S3_V1_2_LR1121)    ||   defined(ARDUINO_LILYGO_T3S3_LR1121)
-
-
-#if   defined(T3_S3_V1_2_SX1262) ||   defined(ARDUINO_LILYGO_T3S3_SX1262)
-#ifndef USING_SX1262
+#if   defined(T3_S3_V1_2_SX1262)
 #define USING_SX1262
-#endif
-#elif defined(T3_S3_V1_2_SX1276) ||   defined(ARDUINO_LILYGO_T3S3_SX1276)
-#ifndef USING_SX1276
+#elif defined(T3_S3_V1_2_SX1276)
 #define USING_SX1276
-#endif
-#elif defined(T3_S3_V1_2_SX1278) ||   defined(ARDUINO_LILYGO_T3S3_SX1278)
-#ifndef USING_SX1278
+#elif defined(T3_S3_V1_2_SX1278)
 #define USING_SX1278
-#endif
-#elif defined(T3_S3_V1_2_SX1280) ||   defined(ARDUINO_LILYGO_T3S3_SX1280)
-#ifndef USING_SX1280
-#define USING_SX1280
-#endif
-#elif defined(T3_S3_V1_2_SX1280_PA) ||   defined(ARDUINO_LILYGO_T3S3_SX1280PA)
-#ifndef USING_SX1280PA
-#define USING_SX1280PA
-#endif
-#elif defined(T3_S3_V1_2_LR1121) ||   defined(ARDUINO_LILYGO_T3S3_LR1121)
-#ifndef USING_LR1121
+#elif defined(T3_S3_V1_2_LR1121)
 #define USING_LR1121
-#endif
-
 #endif // T3_S3_V1_2_SX1262
-
 
 #define I2C_SDA                     18
 #define I2C_SCL                     17
 #define OLED_RST                    UNUSED_PIN
-
 #define RADIO_SCLK_PIN              5
 #define RADIO_MISO_PIN              3
 #define RADIO_MOSI_PIN              6
 #define RADIO_CS_PIN                7
-
 #define SDCARD_MOSI                 11
 #define SDCARD_MISO                 2
 #define SDCARD_SCLK                 14
 #define SDCARD_CS                   13
-
+#define SDCARD_DAT1                 4
+#define SDCARD_DAT2                 12
 #define BOARD_LED                   37
 #define LED_ON                      HIGH
 #define LED_OFF                     LOW
-
 #define BUTTON_PIN                  0
-#define ADC_PIN                     1
-
+#define BAT_ADC_PIN                 1
+#define BAT_ADC_MULTIPLIER          (2.0f)
 #define RADIO_RST_PIN               8
-
+// SX1262
 #if defined(USING_SX1262)
-
 #define RADIO_DIO1_PIN              33
 #define RADIO_BUSY_PIN              34
-
+// SX1276/78
 #elif defined(USING_SX1276) || defined(USING_SX1278)
-//!SX1276/78 module only
 #define RADIO_BUSY_PIN              33      //DIO1
-
 #define RADIO_DIO0_PIN              9
 #define RADIO_DIO1_PIN              33
 #define RADIO_DIO2_PIN              34
 #define RADIO_DIO3_PIN              21
 #define RADIO_DIO4_PIN              10
 #define RADIO_DIO5_PIN              36
-
-#elif defined(USING_SX1280)
-
-#define RADIO_DIO1_PIN              9       //SX1280 DIO1 = IO9
-#define RADIO_BUSY_PIN              36      //SX1280 BUSY = IO36
-
-#elif defined(USING_SX1280PA)
-
-#define RADIO_DIO1_PIN              9       //SX1280 DIO1 = IO9
-#define RADIO_BUSY_PIN              36      //SX1280 BUSY = IO36
-#define RADIO_RX_PIN                21
-#define RADIO_TX_PIN                10
-
-
+// LR1121
 #elif defined(USING_LR1121)
-
 #define RADIO_DIO9_PIN              36      //LR1121 DIO9  = IO36
 #define RADIO_BUSY_PIN              34      //LR1121 BUSY  = IO34
-
 #endif
 
-#define HAS_SDCARD
-#define HAS_DISPLAY
-
+#define DISP_ST7735_160_80     0    // Enable TFT
+#define DISP_SSD1306_128_64    1    // Enable SSD1306 OLED  
+#define DISP_SH110X_128_64     1    // Disable SH110X OLED
 #define BOARD_VARIANT_NAME          "T3 S3 V1.X"
 
-
-#elif defined(T_BEAM_S3_SUPREME)
-
-
-#ifndef USING_SX1262
-#define USING_SX1262
-#endif
-
-
-#define I2C_SDA                     17
-#define I2C_SCL                     18
-
-#define I2C1_SDA                    42
-#define I2C1_SCL                    41
-#define PMU_IRQ                     40
-
-#define GPS_RX_PIN                  9
-#define GPS_TX_PIN                  8
-#define GPS_WAKEUP_PIN              7
-#define GPS_PPS_PIN                6
-
-#define BUTTON_PIN                  0
-#define BUTTON_PIN_MASK             GPIO_SEL_0
-#define BUTTON_CONUT                (1)
-#define BUTTON_ARRAY                {BUTTON_PIN}
-
-#define RADIO_SCLK_PIN              (12)
-#define RADIO_MISO_PIN              (13)
-#define RADIO_MOSI_PIN              (11)
-#define RADIO_CS_PIN                (10)
-#define RADIO_DIO0_PIN               (-1)
-#define RADIO_RST_PIN               (5)
-#define RADIO_DIO1_PIN              (1)
-#define RADIO_BUSY_PIN              (4)
-
-#define SPI_MOSI                    (35)
-#define SPI_SCK                     (36)
-#define SPI_MISO                    (37)
-#define SPI_CS                      (47)
-#define IMU_CS                      (34)
-#define IMU_INT                     (33)
-
-#define SDCARD_MOSI                 SPI_MOSI
-#define SDCARD_MISO                 SPI_MISO
-#define SDCARD_SCLK                 SPI_SCK
-#define SDCARD_CS                   SPI_CS
-
-#define PIN_NONE                    (-1)
-#define RTC_INT                     (14)
-
-#define GPS_BAUD_RATE               9600
-
+//------- Lilygo Lora32 + SX1278 -----------------------
+// https://github.com/LilyGO/TTGO-LORA32/blob/master/schematic1in6.pdf
+#elif defined(LORA32_SX1278) 
+#define HAS_RADIO
 #define HAS_SDCARD
-#define HAS_GPS
 #define HAS_DISPLAY
-#define HAS_PMU
 
-#define __HAS_SPI1__
-#define __HAS_SENSOR__
-
-#define PMU_WIRE_PORT               Wire1
-#define DISPLAY_MODEL               U8G2_SH1106_128X64_NONAME_F_HW_I2C
-#define BOARD_VARIANT_NAME          "T-Beam S3"
-
-#elif defined(T_MOTION_S76G)
-
-#ifndef USING_SX1276
-#define USING_SX1276
-#endif
-
-
-#define RADIO_SCLK_PIN                                  PB13
-#define RADIO_MISO_PIN                                  PB14
-#define RADIO_MOSI_PIN                                  PB15
-#define RADIO_CS_PIN                                    PB12
-#define RADIO_RST_PIN                                   PB10
-
-#define RADIO_DIO0_PIN                                  PB11
-#define RADIO_DIO1_PIN                                  PC13
-#define RADIO_DIO2_PIN                                  PB9
-#define RADIO_DIO3_PIN                                  PB4
-#define RADIO_DIO4_PIN                                  PB3
-#define RADIO_DIO5_PIN                                  PA15
-
-#undef RADIO_BUSY_PIN
-#undef RADIO_DIO1_PIN
-#define RADIO_BUSY_PIN                                  PC13       //DIO1
-#define RADIO_DIO1_PIN                                  PB11       //DIO0
-
-#define RADIO_SWITCH_PIN                                PA1     //1:Rx, 0:Tx
-
-#define GPS_EN_PIN                                      PC6
-#define GPS_RST_PIN                                     PB2
-#define GPS_RX_PIN                                      PC11
-#define GPS_TX_PIN                                      PC10
-#define GPS_ENABLE_PIN                                  PC6
-#define GPS_BAUD_RATE                                   115200
-#define GPS_PPS_PIN                                     PB5
-
-#define UART_RX_PIN                                     PA10
-#define UART_TX_PIN                                     PA9
-
-#define I2C_SCL                                         PB6
-#define I2C_SDA                                         PB7
-
-#define BOARD_VARIANT_NAME                             "T-Motion S76G"
-
-#define HAS_GPS
-
-#elif defined(T3_C6)
-
-
-#ifndef USING_SX1262
-#define USING_SX1262
-#endif
-
-
-#define RADIO_SCLK_PIN          6
-#define RADIO_MISO_PIN          1
-#define RADIO_MOSI_PIN          0
-#define RADIO_CS_PIN            18
-#define RADIO_DIO1_PIN          23
-#define RADIO_BUSY_PIN          22
-#define RADIO_RST_PIN           21
-
-#define I2C_SDA                 8
-#define I2C_SCL                 9
-
-#define BOARD_LED               7
-#define LED_ON                   HIGH
-#define LED_OFF                  LOW
-#define RADIO_RX_PIN                15
-#define RADIO_TX_PIN                14
-
-
-#define BOARD_VARIANT_NAME                             "T3-C6"
-
-#define USING_DIO2_AS_RF_SWITCH
-
-
-#elif defined(T_BEAM_S3_BPF)
-
-
-#ifndef USING_SX1278
 #define USING_SX1278
-#endif
-
-#define I2C_SDA                     8
-#define I2C_SCL                     9
-
-#define PMU_IRQ                     4
-
-#define GPS_RX_PIN                  5
-#define GPS_TX_PIN                  6
-#define GPS_PPS_PIN                 7
-
-#define BUTTON_PIN                  0
-#define BUTTON_PIN_MASK             GPIO_SEL_0
-#define BUTTON_CONUT                (2)
-#define BUTTON_ARRAY                {BUTTON_PIN,3}
-
-#define RADIO_SCLK_PIN              (41)
-#define RADIO_MISO_PIN              (42)
-#define RADIO_MOSI_PIN              (2)
-#define RADIO_CS_PIN                (1)
-#define RADIO_RST_PIN               (18)
-
-#define RADIO_DIO0_PIN              (14)
-#define RADIO_DIO1_PIN              (21)
-#define RADIO_DIO2_PIN              (15)
-
-#define RADIO_TCXO_ENABLE           (17)
-#define RADIO_LDO_EN                (16)
-#define RADIO_BUSY_PIN              (RADIO_DIO1_PIN)
-
-#define SPI_MOSI                    (11)
-#define SPI_SCK                     (12)
-#define SPI_MISO                    (13)
-#define SPI_CS                      (10)
-
-#define SDCARD_MOSI                 SPI_MOSI
-#define SDCARD_MISO                 SPI_MISO
-#define SDCARD_SCLK                 SPI_SCK
-#define SDCARD_CS                   SPI_CS
-
-#define PIN_NONE                    (-1)
-
-#define GPS_BAUD_RATE               9600
-
-#define HAS_SDCARD
-#define HAS_GPS
-#define HAS_DISPLAY
-#define HAS_PMU
-
-#define __HAS_SPI1__
-#define __HAS_SENSOR__
-
-#define PMU_WIRE_PORT               Wire
-#define DISPLAY_MODEL               U8G2_SH1106_128X64_NONAME_F_HW_I2C
-#define BOARD_VARIANT_NAME          "T-Beam BPF"
-
-
-#elif defined(LORA32_SX1278)
-
-#ifndef USING_SX1278
-#define USING_SX1278
-#endif
-
 #define GPS_RX_PIN                  34
 #define GPS_TX_PIN                  12
+#define GPS_BAUDRATE                9600  
 #define BUTTON_PIN                  38
 #define BUTTON_PIN_MASK             GPIO_SEL_38
 #define I2C_SDA                     21
 #define I2C_SCL                     22
-
-#define RADIO_SCLK_PIN               5
+#define OLED_RST                    UNUSED_PIN
+#define RADIO_SCLK_PIN              5
 #define RADIO_MISO_PIN              19
 #define RADIO_MOSI_PIN              27
 #define RADIO_CS_PIN                18
@@ -606,26 +346,104 @@
 #define RADIO_DIO1_PIN              33
 // SX1276/78
 #define RADIO_DIO2_PIN              32
-// SX1262
-#define RADIO_BUSY_PIN              32
-
 #define BAT_ADC_PIN                 35
+#define BAT_ADC_MULTIPLIER          (2.0f)
 #define BOARD_LED                   4
 #define LED_ON                      LOW
 #define LED_OFF                     HIGH
+#define SDCARD_MOSI                 15
+#define SDCARD_MISO                 2
+#define SDCARD_SCLK                 14
+#define SDCARD_CS                   13
+#define SDCARD_DAT2                 12
+#define SDCARD_DAT1                 4
 
-#define GPS_BAUD_RATE               9600
-#define HAS_DISPLAY                 
-
+#define DISP_ST7735_160_80     0    // Enable TFT
+#define DISP_SSD1306_128_64    1    // Enable SSD1306 OLED  
+#define DISP_SH110X_128_64     1    // Disable SH110X OLED                
 #define BOARD_VARIANT_NAME          "Lora32"
 
+//------- Heltec Tracker -----------------------
+// https://resource.heltec.cn/download/Wireless_Tracker/Wireless_Tacker1.1/HTIT-Tracker_V0.5.pdf
+#elif defined(HELTEC_TRACKER)
+#define HAS_GPS
+#define HAS_DISPLAY
+
+#define USING_SX1262
+#define GPS_RX_PIN                  33
+#define GPS_TX_PIN                  34
+#define GPS_PPS_PIN                 36
+#define GPS_RST_PIN                 35
+#define GPS_BAUDRATE                115200  
+#define GPS_RST_LEVEL               LOW 
+#define BUTTON_PIN                  0
+#define BUTTON_PIN_MASK             GPIO_SEL_0
+#define LCD_MOSI                    42
+#define LCD_SCLK                    41
+#define LCD_MISO                    LCD_MOSI // write-only ST7735; S3 HSPI begin() cannot take MISO=-1
+#define LCD_RS                      40
+#define LCS_RES                     39
+#define LCD_CS                      38
+#define LCD_LED                     21
+#define RADIO_SCLK_PIN              9
+#define RADIO_MISO_PIN              11
+#define RADIO_MOSI_PIN              10
+#define RADIO_CS_PIN                8
+#define RADIO_RST_PIN               12
+#define RADIO_DIO0_PIN             (-1)
+#define RADIO_DIO1_PIN              14
+#define RADIO_BUSY_PIN              13
+#define BAT_ADC_PIN                 1
+#define BAT_ADC_EN_PIN              2
+#define BAT_ADC_EN_LEVEL            HIGH
+#define BAT_ADC_EN_HELTEC_FIX
+#define BAT_ADC_MULTIPLIER          (4.9f)
+#define VEXT_EN_PIN                 3
+#define VEXT_EN_LEVEL               HIGH
+#define BOARD_LED                   18
+#define LED_ON                      HIGH
+#define LED_OFF                     LOW
+#define HAS_DISPLAY
+#define DISP_ST7735_160_80     1
+#define DISP_SSD1306_128_64    0
+#define DISP_SH110X_128_64     0
+
+//------- Heltec Lora32 -----------------------
+// https://resource.heltec.cn/download/WiFi_LoRa_32_V3/HTIT-WB32LA(F)_V3.1_Schematic_Diagram.pdf
+#elif defined(HELTEC_LORA32)
+#define USING_SX1262
+#define BUTTON_PIN                  0
+#define BUTTON_PIN_MASK             GPIO_SEL_0
+#define I2C_SDA                     17
+#define I2C_SCL                     18
+#define OLED_RST                    21
+#define RADIO_SCLK_PIN              9
+#define RADIO_MISO_PIN              11
+#define RADIO_MOSI_PIN              10
+#define RADIO_CS_PIN                8
+#define RADIO_RST_PIN               12
+#define RADIO_DIO1_PIN              14
+#define RADIO_BUSY_PIN              13
+#define BAT_ADC_PIN                 1
+#define BAT_ADC_EN_PIN              37
+#define BAT_ADC_EN_LEVEL            LOW
+#define BAT_ADC_MULTIPLIER          (4.9f)
+#define VEXT_EN_PIN                 36
+#define VEXT_EN_LEVEL               LOW
+#define GPS_BAUDRATE                115200
+#define BOARD_LED                   35
+#define LED_ON                      HIGH
+#define LED_OFF                     LOW
+#define HAS_DISPLAY
+#define DISP_ST7735_160_80     0
+#define DISP_SSD1306_128_64    1  
+#define DISP_SH110X_128_64     1
+
+// No board selected - error
 #else
-#error "When using it for the first time, please define the board model in <utilities.h>"
+#error "When using it for the first time, please define the board model in <platformio.ini> and select build configuration"
 #endif
 
-#ifndef DISPLAY_MODEL
-#define DISPLAY_MODEL           U8G2_SSD1306_128X64_NONAME_F_HW_I2C
-#endif
 
 #ifndef OLED_WIRE_PORT
 #define OLED_WIRE_PORT          Wire
@@ -638,3 +456,26 @@
 #ifndef DISPLAY_ADDR
 #define DISPLAY_ADDR            0x3C
 #endif
+
+// *****************************************************************************
+// DISPLAY TYPE DEFINITIONS
+// Define which display types are supported on this board
+// *****************************************************************************
+// TFT Display - ST7735 160x80
+#ifndef DISP_ST7735_160_80
+#define DISP_ST7735_160_80     0
+#endif
+
+// OLED Displays - 128x64 (can be supported simultaneously)
+#ifndef DISP_SSD1306_128_64
+#define DISP_SSD1306_128_64    0
+#endif
+
+#ifndef DISP_SH110X_128_64
+#define DISP_SH110X_128_64     0
+#endif
+
+// Helper macros to check if any display is enabled
+#define HAS_TFT_DISPLAY         (DISP_ST7735_160_80)
+#define HAS_OLED_DISPLAY        (DISP_SSD1306_128_64 || DISP_SH110X_128_64)
+#define HAS_ANY_DISPLAY         (HAS_TFT_DISPLAY || HAS_OLED_DISPLAY)

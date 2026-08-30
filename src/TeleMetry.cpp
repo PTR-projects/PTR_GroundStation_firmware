@@ -9,7 +9,7 @@
 #include <ArduinoJson.h>
 #include "TeleMetry.h"
 
-void TM_parser_FULLSTATE(float rssi, uint8_t * buf);
+void TM_parser_ROCKET(float rssi, uint8_t * buf);
 void TM_parser_TRACKER(float rssi, uint8_t * buf);
 void TM_file_write(char * line, uint16_t length);
 void TM_updateHistory(uint16_t sender_id, float latitude, float longitude, float altitude);
@@ -25,7 +25,8 @@ float dir2target = 0.0f;
 
 float TM_RSSI = -200.0f;
 
-int TM_ID = 1; //Target ID
+int TM_ID = 0;
+bool TM_id_filter = false;
 
 float verticalVel = 0.0f;
 
@@ -38,24 +39,24 @@ void TM_parser(uint8_t * buf, uint8_t len, float RSSI){
 	
 	//Telemetry frame - full state
 	if((*((uint8_t *)buf + 0)) == PACKET_LEGACY_FULL)		
-		TM_parser_FULLSTATE(RSSI, buf);
+		TM_parser_ROCKET(RSSI, buf);
 
 	//Tracker frame - full state retransmitted
 	if((*((uint8_t *)buf + 0)) == PACKET_TRACKER)	
 		TM_parser_TRACKER(RSSI, buf);
 }
 
-void TM_parser_FULLSTATE(float rssi, uint8_t * buf){
+void TM_parser_ROCKET(float rssi, uint8_t * buf){
 	//Serial.println(F("Full Telemetry!"));
 
-	kppacket_legacyheader_t * pHeader;
-	kppacket_payload_legacyfull_t * pPlayload;
+	kppacket_header_t * pHeader;
+	kppacket_payload_rocket_t * pPlayload;
 
-	pHeader = (kppacket_legacyheader_t*)buf;
-	pPlayload = (kppacket_payload_legacyfull_t*)(buf + sizeof(kppacket_legacyheader_t));
+	pHeader = (kppacket_header_t*)buf;
+	pPlayload = (kppacket_payload_rocket_t*)(buf + sizeof(kppacket_header_t));
 
 	// Check if packet is destined to this device
-	if((pHeader->sender_id != TM_ID) && (TM_ID != 0)) {
+	if(TM_id_filter && (pHeader->sender_id != TM_ID)) {
 		return;
 	}
 
@@ -67,7 +68,8 @@ void TM_parser_FULLSTATE(float rssi, uint8_t * buf){
 	rocket_state_d.dest_ID = 0;
 	rocket_state_d.state = pPlayload->state;
 	rocket_state_d.flags = pPlayload->flags;
-	rocket_state_d.accX  = pPlayload->accX_100 / 100.0f;
+	rocket_state_d.vbat  = ((float)pPlayload->vbat_10)  / 10.0f;
+	rocket_state_d.accX  = ((float)pPlayload->accX_100) / 100.0f;
 	rocket_state_d.accY  = ((float)pPlayload->accY_100) / 100.0f;
 	rocket_state_d.accZ  = ((float)pPlayload->accZ_100) / 100.0f;
 	rocket_state_d.gyroX = ((float)pPlayload->gyroX_10) / 10.0f;
@@ -84,7 +86,6 @@ void TM_parser_FULLSTATE(float rssi, uint8_t * buf){
 	rocket_state_d.gnss_altitude = ((float)pPlayload->alti_gps)  / 1000.0f;
 	rocket_state_d.fix = ((uint8_t)pPlayload->sats_fix) >> 6;
 	rocket_state_d.sats = ((uint8_t)pPlayload->sats_fix) & 0x3F;
-	rocket_state_d.vbat = ((float)pPlayload->vbat_10) / 10.0f;
 
 	if(rocket_state_d.fix > 0){
 		
@@ -105,7 +106,7 @@ void TM_parser_FULLSTATE(float rssi, uint8_t * buf){
 
 	char raw_packet[512];
 	memset(raw_packet, 0, sizeof(raw_packet));
-	int packet_len = sizeof(kppacket_payload_rocket_tracker_t) + sizeof(kppacket_header_t);
+	int packet_len = sizeof(kppacket_payload_rocket_t) + sizeof(kppacket_header_t);
 	for(uint8_t i = 0; i < packet_len; i++){
 		sprintf(raw_packet + 2 * i, "%02X", *(buf+i));
 	}
@@ -151,6 +152,15 @@ void TM_parser_FULLSTATE(float rssi, uint8_t * buf){
 	raw_packet);
 	
 	Serial.print(buffer);
+
+	sprintf(buffer, "%i, %c, %.4f, %c, %.4f, %.2f, %i, %i\n\n",
+		rocket_state_d.timestamp_ms,
+		rocket_state_d.gnss_lat.sign, rocket_state_d.gnss_lat.cord,  
+		rocket_state_d.gnss_lon.sign, rocket_state_d.gnss_lon.cord, 
+		rocket_state_d.gnss_altitude, 
+		rocket_state_d.fix, rocket_state_d.sats);
+	Serial.print(buffer);
+
 	TM_file_write(buffer, len);
 
 	// SQL
@@ -166,7 +176,7 @@ void TM_parser_FULLSTATE(float rssi, uint8_t * buf){
 		.longitude = ((float)((pPlayload->lon)))  / 10000000.0f,
 		.altitude = (float)pPlayload->alti_gps / 1000.0f,
 		.max_altitude = 0.0f,
-		.packet_length = sizeof(kppacket_payload_legacyfull_t) + sizeof(kppacket_legacyheader_t)
+		.packet_length = sizeof(kppacket_payload_rocket_t) + sizeof(kppacket_header_t)
 	};
 
 	memcpy(packet_generic_d.raw, pHeader, packet_generic_d.packet_length);
@@ -183,7 +193,7 @@ void TM_parser_TRACKER(float rssi, uint8_t * buf){
 	pPlayload = (kppacket_payload_rocket_tracker_t*)(buf + sizeof(kppacket_header_t));
 
 	// Check if packet is destined to this device
-	if((pHeader->sender_id != TM_ID) && (TM_ID != 0)) {
+	if(TM_id_filter && (pHeader->sender_id != TM_ID)) {
 		return;
 	}
 
@@ -369,6 +379,17 @@ bool TM_changeID(int id) {
 	return true;
 }
 
+bool TM_setFilterEnabled(bool enabled) {
+	Serial.printf("ID filter %s \n", enabled ? "ON" : "OFF");
+	TM_id_filter = enabled;
+	preferences_update_id_filter(enabled);
+	return true;
+}
+
+bool TM_getFilterEnabled() {
+	return TM_id_filter;
+}
+
 int TM_getID() {
 	return TM_ID;
 }
@@ -404,6 +425,22 @@ void TM_updateHistory(uint16_t sender_id, float latitude, float longitude, float
 	history_table[index].altitude 	= altitude;
 }
 
+
+int TM_getKnownSenderIDs(uint16_t *ids, int max_ids){
+	if(ids == NULL || max_ids <= 0){
+		return 0;
+	}
+
+	uint16_t table_size = sizeof(history_table) / sizeof(TM_history_table_entry_t);
+	int count = 0;
+	for(uint16_t i = 0; i < table_size && count < max_ids; i++){
+		if(history_table[i].sender_id == 0){
+			break;
+		}
+		ids[count++] = history_table[i].sender_id;
+	}
+	return count;
+}
 
 String TM_getJSON() {
   JsonDocument doc;

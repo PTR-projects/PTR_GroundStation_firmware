@@ -123,7 +123,7 @@ typedef struct __attribute__((__packed__)){
 	int32_t lon;		//[1e-7 deg]
 	int32_t alti_gps;	//Height above ellipsoid [- mm]
 	uint8_t sats_fix;	//6b - sats + 2b fix
-} kppacket_payload_legacyfull_t;
+} kppacket_payload_rocket_t;
 
 typedef struct __attribute__((__packed__)){
     uint8_t packet_len;
