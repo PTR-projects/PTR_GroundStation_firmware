@@ -1,16 +1,15 @@
 #include "Arduino.h"
 #include <math.h>
-#include <SparkFun_u-blox_GNSS_Arduino_Library.h> 
-#include <MicroNMEA.h>
 #include "BOARD.h"
 #include "GNSS.h"
 
-
+#if defined(HAS_GPS)
 //------ GNSS -------------
-SFE_UBLOX_GNSS myGNSS;
+#include <MicroNMEA.h>
 char nmeaBuffer[100];
 MicroNMEA nmea(nmeaBuffer, sizeof(nmeaBuffer));
-
+HardwareSerial& gps_serial = Serial1;
+#endif
 
 //----- Global vars --------
 float myLat    = 0.0f;
@@ -19,24 +18,14 @@ uint8_t myFix  = 0;
 uint8_t mySats = 0;
 
 bool GNSS_init(){
-#if defined (GPS_RST_PIN)
-    pinMode(GPS_RST_PIN, OUTPUT);
-    digitalWrite(GPS_RST_PIN, LOW);
-    delay(20);
-    pinMode(GPS_RST_PIN, INPUT);
-    delay(100);
-#endif
+#if defined(HAS_GPS)
 
-#if defined (GPS_PPS_PIN)
+#if defined(GPS_PPS_PIN)
     pinMode(GPS_PPS_PIN, INPUT);
 #endif
 
-#if defined(HAS_GPS)
-    if (myGNSS.begin(Serial1) == false) {
-        Serial.println(F("Ublox init Failed."));
-        //while (1);
-        return false;
-    }
+    gps_serial.begin(GPS_BAUDRATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
+    gpsHardwareReset();
 #endif
     return true;
 }
@@ -47,18 +36,18 @@ double toRad(double degree) {
 
 void GNSS_srv(){
     #if defined(HAS_GPS)
-    if(myGNSS.checkUblox()){
-        if (nmea.isValid() == true) {
-            long latitude_mdeg = nmea.getLatitude();
-            long longitude_mdeg = nmea.getLongitude();
-            myLat = latitude_mdeg  / 1000000.0f;
-            myLon = longitude_mdeg / 1000000.0f;
-            myFix = 1;
-            mySats = nmea.getNumSatellites();
-        } else {
-            myFix = 0;
-            mySats = 0;
-        }
+    GNSS_process();
+    
+    if (nmea.isValid() == true) {
+        long latitude_mdeg = nmea.getLatitude();
+        long longitude_mdeg = nmea.getLongitude();
+        myLat = latitude_mdeg  / 1000000.0f;
+        myLon = longitude_mdeg / 1000000.0f;
+        myFix = 1;
+        mySats = nmea.getNumSatellites();
+    } else {
+        myFix = 0;
+        mySats = 0;
     }
     #endif
 }
@@ -108,7 +97,30 @@ uint8_t GNSS_getOwnSat(){
     return mySats;
 }
 
-void SFE_UBLOX_GNSS::processNMEA(char incoming)
-{
-    nmea.process(incoming);
+void GNSS_process(){
+#if defined(HAS_GPS)
+    while (gps_serial.available()) {
+        char c = gps_serial.read();
+        nmea.process(c);
+    }
+#endif
+}
+
+void gpsHardwareReset(){
+#if defined(GPS_RST_PIN) && defined(GPS_RST_LEVEL) && defined(HAS_GPS)
+    pinMode(GPS_RST_PIN, OUTPUT);
+    digitalWrite(GPS_RST_PIN, !GPS_RST_LEVEL);
+
+    while (gps_serial.available()) {
+        gps_serial.read();
+    }
+
+    digitalWrite(GPS_RST_PIN, GPS_RST_LEVEL);
+    delay(50);
+    digitalWrite(GPS_RST_PIN, !GPS_RST_LEVEL);
+
+    // Give the module time to boot. Do not block on NMEA — a missing or
+    // slow GPS must not hang setup(); GNSS_srv() will parse sentences later.
+    delay(100);
+#endif
 }
