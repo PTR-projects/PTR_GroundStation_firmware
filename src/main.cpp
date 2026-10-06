@@ -210,7 +210,7 @@ void setup() {
   });
 
   server.on("/delete", HTTP_GET, [](AsyncWebServerRequest *request){
-    deleteFile(SPIFFS, "/log.csv");
+    FS_logDelete();
     request->send(200, "text/plain", "Succesfully deleted file!");
   });
 

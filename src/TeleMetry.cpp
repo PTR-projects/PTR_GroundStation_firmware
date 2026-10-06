@@ -112,7 +112,7 @@ void TM_parser_ROCKET(float rssi, uint8_t * buf){
 	}
 
 	char buffer[1024] = {0};
-	uint16_t len = sprintf(buffer, 
+	int len = snprintf(buffer, sizeof(buffer),
 				"0x%X;%.1f;%ld;%d;%i;%i;%i;"	//sys state
 				"%.1f;"				// Vbat
 				"%.2f;%.2f;%.2f;"	// acc
@@ -150,18 +150,19 @@ void TM_parser_ROCKET(float rssi, uint8_t * buf){
 	GNSS_getOwnFix(), GNSS_getOwnSat(),
 	distance2target, dir2target,
 	raw_packet);
-	
-	Serial.print(buffer);
 
-	sprintf(buffer, "%i, %c, %.4f, %c, %.4f, %.2f, %i, %i\n\n",
+	if (len > 0 && len < (int)sizeof(buffer)) {
+		Serial.print(buffer);
+		TM_file_write(buffer, (uint16_t)len);
+	}
+
+	snprintf(buffer, sizeof(buffer), "%i, %c, %.4f, %c, %.4f, %.2f, %i, %i\n\n",
 		rocket_state_d.timestamp_ms,
 		rocket_state_d.gnss_lat.sign, rocket_state_d.gnss_lat.cord,  
 		rocket_state_d.gnss_lon.sign, rocket_state_d.gnss_lon.cord, 
 		rocket_state_d.gnss_altitude, 
 		rocket_state_d.fix, rocket_state_d.sats);
 	Serial.print(buffer);
-
-	TM_file_write(buffer, len);
 
 	// SQL
 	packet_generic_t packet_generic_d = {
@@ -249,7 +250,7 @@ void TM_parser_TRACKER(float rssi, uint8_t * buf){
 	}
 
 	char buffer[1024] = {0};
-	uint16_t len = sprintf(buffer, "0x%X;%.1f;%ld;%d;%i;"	//Packet ID, timestamp, packet no, sender ID
+	int len = snprintf(buffer, sizeof(buffer), "0x%X;%.1f;%ld;%d;%i;"	//Packet ID, timestamp, packet no, sender ID
 									"%.1f;"					// Vbat
 									"%c;%f;%c;%f;%.1f;"		// geo + alt
 									"%d;%d;"				// fix, sats
@@ -271,8 +272,10 @@ void TM_parser_TRACKER(float rssi, uint8_t * buf){
 	distance2target, dir2target,
 	raw_packet);
 
-	Serial.print(buffer);
-	TM_file_write(buffer, len);
+	if (len > 0 && len < (int)sizeof(buffer)) {
+		Serial.print(buffer);
+		TM_file_write(buffer, (uint16_t)len);
+	}
 
 	// SQL
 	packet_generic_t packet_generic_d = {
@@ -365,9 +368,16 @@ float TM_getVbat(){
 }
 
 void TM_file_write(char * line, uint16_t length){
-	// if(*(line+length) == 0){
-	// 	appendFile(SPIFFS, "/log.csv", line);
-	// }
+	if (line == nullptr || length == 0 || length > FS_LOG_MAX_LINE_BYTES) {
+		return;
+	}
+	if (line[length] != '\0') {
+		return;
+	}
+	if (strnlen(line, (size_t)length + 1) != length) {
+		return;
+	}
+	FS_logAppend(line);
 }
 
 bool TM_changeID(int id) {
